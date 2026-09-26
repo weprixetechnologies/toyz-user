@@ -19,6 +19,7 @@ import { CartProvider } from '../context/CartContext';
 import { WishlistProvider } from '../context/WishlistContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
   title: 'WePrixe Store — Enterprise E-Commerce Platform',
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`flex flex-col min-h-screen ${montserrat.variable} ${ledger.variable} font-sans`}>
         <AuthProvider>
+          <Toaster position="top-center" />
           <CartProvider>
             <WishlistProvider>
               <Navbar />
