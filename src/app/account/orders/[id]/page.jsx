@@ -34,7 +34,7 @@ export default function OrderDetailPage() {
   const { order, items = [], shipments = [], rejected_items = [] } = orderData;
 
   const handleDownloadInvoice = async () => {
-    window.open(`http://72.60.219.181:98111/api/v1/orders/${order.id}/invoice`, '_blank');
+    window.open(`http://72.60.219.181:46711/api/v1/orders/${order.id}/invoice`, '_blank');
   };
 
   return (

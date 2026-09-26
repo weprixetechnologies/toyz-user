@@ -9,7 +9,7 @@ export const revalidate = 60; // ISR revalidate every 60 seconds
 
 async function fetchHomepageData() {
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181:98111/api/v1';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181:46711/api/v1';
 
     const [catRes, bannerRes, sectionRes] = await Promise.all([
       fetch(`${API_URL}/categories`, { next: { revalidate: 60 } }).then(res => res.json()),
@@ -119,11 +119,11 @@ export default async function HomePage() {
                 <ProductCarousel products={section.products || []} />
               ) : (
                 <div className={`grid grid-cols-2 gap-4 md:gap-6 ${section.layout_style === 'grid-2' ? 'lg:grid-cols-2' :
-                    section.layout_style === 'grid-3' ? 'lg:grid-cols-3' :
-                      section.layout_style === 'grid-4' ? 'lg:grid-cols-4' :
-                        section.layout_style === 'grid-5' ? 'lg:grid-cols-5' :
-                          section.layout_style === 'grid-6' ? 'lg:grid-cols-6' :
-                            'lg:grid-cols-4'
+                  section.layout_style === 'grid-3' ? 'lg:grid-cols-3' :
+                    section.layout_style === 'grid-4' ? 'lg:grid-cols-4' :
+                      section.layout_style === 'grid-5' ? 'lg:grid-cols-5' :
+                        section.layout_style === 'grid-6' ? 'lg:grid-cols-6' :
+                          'lg:grid-cols-4'
                   }`}>
                   {(section.products || []).map(p => (
                     <ProductCard key={p.id} product={p} />
