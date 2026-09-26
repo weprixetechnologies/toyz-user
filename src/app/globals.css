@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+@media (min-width: 768px) { .block-col { width: var(--col-width) !important; flex-basis: var(--col-width) !important; } }
+
+@media (min-width: 768px) { .block-col-auto { flex: var(--col-flex) !important; width: 0 !important; } }
+
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-ledger), serif !important;
+}

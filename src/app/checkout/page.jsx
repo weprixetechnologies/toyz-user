@@ -1,0 +1,443 @@
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { api } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
+import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus } from 'lucide-react';
+
+
+import LoginModal from '../../components/LoginModal';
+
+function CheckoutContent() {
+  const searchParams = useSearchParams();
+  const isBuyNow = searchParams.get('buyNow') === 'true';
+  const router = useRouter();
+  const { user, loading: authLoading, isReseller } = useAuth();
+  const { cart, clearCart } = useCart();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setShowLoginModal(true);
+    } else {
+      setShowLoginModal(false);
+    }
+  }, [user, authLoading]);
+  const [buyNowItem, setBuyNowItem] = useState(null);
+
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [showNewAddress, setShowNewAddress] = useState(false);
+  const [newAddr, setNewAddr] = useState({ line1: '', city: '', state: '', pin_code: '', phone: '' });
+
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [selectedMethod, setSelectedMethod] = useState('cod');
+
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [evaluation, setEvaluation] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    async function loadCheckoutData() {
+      setLoading(true);
+
+      if (isBuyNow) {
+        const productId = searchParams.get('productId');
+        const variantId = searchParams.get('variantId');
+        const qty = parseInt(searchParams.get('qty')) || 1;
+        const res = await api.get(`/products/${productId}`);
+        if (res.success && res.data) {
+           const p = res.data.product || res.data;
+           let item = { product_id: p.id, qty, name: p.name, price: p.sale_price || p.base_price, sku: p.sku };
+           if (variantId) {
+             const v = (p.variants || []).find(x => x.id.toString() === variantId);
+             if (v) {
+               item.variant_id = v.id;
+               item.price = v.sale_price || v.price;
+               item.sku = v.sku;
+               item.variant_label = v.attributes ? v.attributes.map(a => a.value).join(', ') : '';
+             }
+           }
+           setBuyNowItem(item);
+        }
+      }
+      const [addrRes, payRes, shipRes] = await Promise.all([
+        api.get('/users/addresses'),
+        api.get('/payments/methods'),
+        api.get('/cart/shipping-options')
+      ]);
+
+      if (addrRes.success) {
+        const list = addrRes.data?.addresses || addrRes.data || [];
+        setAddresses(list);
+        if (list.length > 0) setSelectedAddressId(list[0].id.toString());
+        else setShowNewAddress(true);
+      }
+
+      if (payRes.success) {
+        const methods = payRes.data?.methods || payRes.data || [];
+        setPaymentMethods(methods);
+        if (methods.length > 0) setSelectedMethod(methods[0].key_name || methods[0].code || 'cod');
+      }
+
+      if (shipRes.success) {
+        const opts = shipRes.data?.options || shipRes.data || [];
+        setShippingOptions(opts);
+        if (opts.length > 0) setSelectedShipping(opts[0]);
+      }
+
+      setLoading(false);
+    }
+    loadCheckoutData();
+  }, []);
+
+  const handleCreateAddress = async (e) => {
+    e.preventDefault();
+    const res = await api.post('/users/addresses', newAddr);
+    if (res.success && res.data) {
+      const createdId = (res.data.address_id || res.data.id).toString();
+      const updated = await api.get('/users/addresses');
+      if (updated.success) setAddresses(updated.data?.addresses || updated.data || []);
+      setSelectedAddressId(createdId);
+      setShowNewAddress(false);
+    } else {
+      alert(res.message || 'Failed to add address');
+    }
+  };
+
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+    if (!user) { setShowLoginModal(true); return; }
+    setErrorMessage('');
+    
+    if (showNewAddress) {
+      setErrorMessage('Please save and select your new address first.');
+      return;
+    }
+    
+    if (!selectedAddressId) {
+      setErrorMessage('Please select a shipping address.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    const payload = {
+      shipping_address_id: selectedAddressId,
+      payment_method: selectedMethod,
+      shipping_option_id: selectedShipping?.id,
+      notes: '',
+      is_buy_now: isBuyNow,
+      buy_now_item: buyNowItem,
+      coupon_code: appliedCoupon
+    };
+
+    const res = await api.post('/orders', payload);
+    if (res.success && res.data) {
+      const orderId = res.data.order?.id || res.data.id;
+      await clearCart();
+      router.push(`/checkout/success?orderId=${orderId}`);
+    } else {
+      setErrorMessage(res.message || 'Failed to place order. Please try again.');
+      setSubmitting(false);
+    }
+  };
+
+  const items = isBuyNow && buyNowItem ? [buyNowItem] : (cart?.items || []);
+  const rawSubtotal = isBuyNow && buyNowItem 
+    ? (parseFloat(buyNowItem.price || 0) * (buyNowItem.qty || 1))
+    : (cart?.subtotal || items.reduce((sum, i) => sum + (parseFloat(i.price || i.unit_price || 0) * (i.qty || 1)), 0));
+
+  useEffect(() => {
+    async function evaluate() {
+      if (rawSubtotal <= 0) return;
+      const res = await api.post('/offers/validate', { subtotal: rawSubtotal, coupon_code: appliedCoupon });
+      if (res.success) {
+        setEvaluation(res.data);
+      }
+    }
+    evaluate();
+  }, [rawSubtotal, appliedCoupon]);
+
+  const finalSubtotal = evaluation ? evaluation.final_subtotal : rawSubtotal;
+  const shippingCost = isReseller ? 0 : (selectedShipping ? parseFloat(selectedShipping.cost || 0) : 50);
+  const shippingText = isReseller ? 'To Be Calculated' : `₹${shippingCost.toLocaleString('en-IN')}`;
+  const grandTotal = finalSubtotal + shippingCost;
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-sm text-gray-500">Preparing secure checkout...</p>
+      </div>
+    );
+  }
+
+  // Graceful Checkout Blocked State
+  if (paymentMethods.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center bg-white p-8 rounded-2xl border border-red-200 shadow-md space-y-4">
+        <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle size={24} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">Checkout Temporarily Disabled</h2>
+        <p className="text-sm text-gray-600">
+          No active payment methods are currently available. Please contact store support or try again later.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <h1 className="text-3xl font-black text-gray-900">Secure Order Checkout</h1>
+
+      {errorMessage && (
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold rounded-xl">
+          {errorMessage}
+        </div>
+      )}
+
+      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Section 1: Shipping Address */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
+            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+              <MapPin className="text-sky-600" size={20} /> Shipping Address
+            </h3>
+
+            {addresses.length > 0 && !showNewAddress && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {addresses.map((a) => (
+                  <label
+                    key={a.id}
+                    className={`p-4 rounded-xl border cursor-pointer block space-y-1 transition ${
+                      selectedAddressId === a.id.toString() ? 'border-sky-600 bg-sky-50/50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="address"
+                      value={a.id}
+                      checked={selectedAddressId === a.id.toString()}
+                      onChange={(e) => setSelectedAddressId(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="font-bold text-sm text-gray-900">{a.name || user?.name}</div>
+                    <div className="text-xs text-gray-600">{a.line1}, {a.city}, {a.state} - {a.pin_code}</div>
+                    <div className="text-xs text-gray-500">Phone: {a.phone}</div>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowNewAddress(!showNewAddress)}
+              className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1"
+            >
+              <Plus size={14} /> {showNewAddress ? 'Select Saved Address' : 'Add New Address'}
+            </button>
+
+            {showNewAddress && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <input
+                  type="text"
+                  placeholder="Address Line 1"
+                  value={newAddr.line1}
+                  onChange={(e) => setNewAddr({ ...newAddr, line1: e.target.value })}
+                  className="sm:col-span-2 p-2.5 border border-gray-300 rounded-lg text-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="City"
+                  value={newAddr.city}
+                  onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
+                  className="p-2.5 border border-gray-300 rounded-lg text-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="State"
+                  value={newAddr.state}
+                  onChange={(e) => setNewAddr({ ...newAddr, state: e.target.value })}
+                  className="p-2.5 border border-gray-300 rounded-lg text-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="Pincode"
+                  value={newAddr.pin_code}
+                  onChange={(e) => setNewAddr({ ...newAddr, pin_code: e.target.value })}
+                  className="p-2.5 border border-gray-300 rounded-lg text-xs"
+                />
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  value={newAddr.phone}
+                  onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
+                  className="p-2.5 border border-gray-300 rounded-lg text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateAddress}
+                  className="sm:col-span-2 mt-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-bold py-2 rounded-lg text-xs transition"
+                >
+                  Save Address & Select
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Shipping Presets */}
+          {shippingOptions.length > 0 && (
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
+              <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                <Truck className="text-sky-600" size={20} /> Shipping Method
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {shippingOptions.map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`p-3.5 rounded-xl border cursor-pointer block transition ${
+                      selectedShipping?.id === opt.id ? 'border-sky-600 bg-sky-50/50' : 'border-gray-200'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="shipping"
+                      checked={selectedShipping?.id === opt.id}
+                      onChange={() => setSelectedShipping(opt)}
+                      className="sr-only"
+                    />
+                    <div className="flex justify-between font-bold text-sm text-gray-900">
+                      <span>{opt.name}</span>
+                      <span>₹{parseFloat(opt.cost).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">Estimated delivery: {opt.estimated_days || '3-5'} business days</div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section 3: Payment Method */}
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
+            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+              <CreditCard className="text-sky-600" size={20} /> Payment Option
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {paymentMethods.map((m) => {
+                const key = m.key_name || m.code || 'cod';
+                return (
+                  <label
+                    key={key}
+                    className={`p-4 rounded-xl border cursor-pointer block transition ${
+                      selectedMethod === key ? 'border-sky-600 bg-sky-50/50' : 'border-gray-200'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={key}
+                      checked={selectedMethod === key}
+                      onChange={(e) => setSelectedMethod(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="font-bold text-sm text-gray-900">{m.display_name || key.toUpperCase()}</div>
+                    <div className="text-xs text-gray-500 mt-1">{key === 'cod' ? 'Pay upon delivery' : 'Secure Online Gateway'}</div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Checkout Summary Sidebar */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 h-fit space-y-6">
+          <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Final Order Calculation</h3>
+
+          <div className="mb-4">
+            <h4 className="font-bold text-xs text-gray-900 mb-2">Have a Coupon?</h4>
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={couponCode} 
+                onChange={(e) => setCouponCode(e.target.value)} 
+                placeholder="Enter Code" 
+                className="flex-1 p-2 border border-gray-300 rounded-lg text-xs"
+              />
+              <button 
+                type="button" 
+                onClick={() => setAppliedCoupon(couponCode)} 
+                className="bg-sky-600 hover:bg-sky-700 text-white px-4 rounded-lg text-xs font-bold"
+              >
+                Apply
+              </button>
+            </div>
+            {evaluation?.applied_coupon?.valid === false && (
+              <p className="text-red-500 text-[10px] mt-1">{evaluation.applied_coupon.error}</p>
+            )}
+            {evaluation?.applied_coupon?.valid !== false && evaluation?.applied_coupon?.code && (
+              <p className="text-green-600 text-[10px] mt-1">Coupon {evaluation.applied_coupon.code} applied!</p>
+            )}
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>Items Subtotal</span>
+              <span>₹{rawSubtotal.toLocaleString('en-IN')}</span>
+            </div>
+            {evaluation?.offer_discount > 0 && (
+              <div className="flex justify-between text-green-600 text-xs">
+                <span>Offers Applied</span>
+                <span>-₹{evaluation.offer_discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+            {evaluation?.coupon_discount > 0 && (
+              <div className="flex justify-between text-green-600 text-xs">
+                <span>Coupon Discount</span>
+                <span>-₹{evaluation.coupon_discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-gray-600">
+              <span>Shipping Fee</span>
+              <span className={isReseller ? "text-orange-500 font-bold text-[10px] uppercase" : ""}>{shippingText}</span>
+            </div>
+            <div className="flex justify-between font-bold text-gray-900 text-lg pt-3 border-t border-gray-100">
+              <span>Total Payable</span>
+              <span className="text-sky-600">₹{grandTotal.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-slate-900 hover:bg-sky-600 text-white font-bold py-3.5 rounded-xl transition shadow-lg disabled:opacity-50"
+          >
+            {submitting ? 'Placing Order...' : 'Confirm & Place Order'}
+          </button>
+
+          <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+            <ShieldCheck size={14} /> 256-bit Encrypted Transaction
+          </p>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center font-bold text-gray-500">Loading Checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
