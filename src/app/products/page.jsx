@@ -71,6 +71,9 @@ export default function ProductsPage() {
   const [inStock, setInStock] = useState(null); // true, false, or null
   const [minRating, setMinRating] = useState(null); // number or null
 
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const initialSearch = searchParams?.get('search') || '';
+
   async function loadProducts() {
     setLoading(true);
     const params = { limit: 24, sort };
@@ -80,6 +83,7 @@ export default function ProductsPage() {
     if (maxPrice) params.max_price = maxPrice;
     if (inStock !== null) params.in_stock = inStock;
     if (minRating !== null) params.min_rating = minRating;
+    if (initialSearch) params.search = initialSearch;
     
     const prodRes = await api.get('/products', params);
 
@@ -249,10 +253,10 @@ export default function ProductsPage() {
                       <div key={b.id || i} className="w-full flex-shrink-0 relative">
                         {b.link_url ? (
                           <Link href={b.link_url} className="block w-full">
-                            <Image width={800} height={800} src={b.image_url} alt={b.title || "Shop Banner"} className="w-full h-auto object-cover" />
+                            <Image width={1920} height={400} src={b.image_url} alt={b.title || "Shop Banner"} className="w-full h-auto object-cover" />
                           </Link>
                         ) : (
-                          <Image width={800} height={800} src={b.image_url} alt={b.title || "Shop Banner"} className="w-full h-auto object-cover" />
+                          <Image width={1920} height={400} src={b.image_url} alt={b.title || "Shop Banner"} className="w-full h-auto object-cover" />
                         )}
                       </div>
                     ))}
@@ -268,10 +272,10 @@ export default function ProductsPage() {
                 <div className="w-full">
                    {shopBanners[0].link_url ? (
                      <Link href={shopBanners[0].link_url} className="block w-full">
-                       <Image width={800} height={800} src={shopBanners[0].image_url} alt={shopBanners[0].title || "Shop Banner"} className="w-full h-auto object-cover" />
+                       <Image width={1920} height={400} src={shopBanners[0].image_url} alt={shopBanners[0].title || "Shop Banner"} className="w-full h-auto object-cover" />
                      </Link>
                    ) : (
-                     <Image width={800} height={800} src={shopBanners[0].image_url} alt={shopBanners[0].title || "Shop Banner"} className="w-full h-auto object-cover" />
+                     <Image width={1920} height={400} src={shopBanners[0].image_url} alt={shopBanners[0].title || "Shop Banner"} className="w-full h-auto object-cover" />
                    )}
                 </div>
               )}

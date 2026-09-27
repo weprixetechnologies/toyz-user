@@ -332,25 +332,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* Feature Badges below image */}
-              <div className="grid grid-cols-4 gap-2 mt-4">
-                <div className="bg-gray-50 rounded-xl p-2 text-center flex flex-col items-center justify-center border border-gray-100 h-24">
-                  <Image width={800} height={800} src="https://cly-pull-bunny.b-cdn.net/rc_car_1790409204292.jpg" className="h-10 object-contain mb-1 mix-blend-multiply opacity-80" />
-                  <span className="text-[10px] font-bold leading-tight">4WD Power<br/><span className="font-normal text-gray-500">All Terrains</span></span>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-2 text-center flex flex-col items-center justify-center border border-gray-100 h-24">
-                   <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-1"><Zap size={20}/></div>
-                  <span className="text-[10px] font-bold leading-tight">High Speed<br/><span className="font-normal text-gray-500">Up to 70+ KM/H</span></span>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-2 text-center flex flex-col items-center justify-center border border-gray-100 h-24">
-                  <div className="h-10 w-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-1"><ShieldCheck size={20}/></div>
-                  <span className="text-[10px] font-bold leading-tight">Shock Absorbers<br/><span className="font-normal text-gray-500">Smooth Ride</span></span>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-2 text-center flex flex-col items-center justify-center border border-gray-100 h-24">
-                   <Image width={800} height={800} src="https://cly-pull-bunny.b-cdn.net/hero_banner_1790409173201.jpg" className="h-10 object-cover rounded mb-1 opacity-80" />
-                  <span className="text-[10px] font-bold leading-tight">Durable Build<br/><span className="font-normal text-gray-500">Indoor & Outdoor</span></span>
-                </div>
-              </div>
+              {/* Removed Feature Badges */}
             </div>
           </div>
 
@@ -611,9 +593,6 @@ export default function ProductDetailPage() {
         <div className="flex overflow-x-auto hide-scrollbar border-b border-gray-200">
           {[
             { id: 'details', label: 'Product Details' },
-            { id: 'specs', label: 'Specifications' },
-            { id: 'box', label: "What's in the Box" },
-            { id: 'videos', label: 'Product Videos' },
             { id: 'reviews', label: `Reviews (${product.review_count || 0})` },
             { id: 'faq', label: 'Questions (24)' }
           ].map(tab => (

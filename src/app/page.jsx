@@ -87,21 +87,28 @@ export default async function HomePage() {
           return (
             <section key={section.id} className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="flex flex-col md:flex-row gap-6 w-full">
-                {(section.config_data || []).map((col, idx) => (
-                  <div key={idx}
-                    style={section.layout_style === 'auto' ? { '--col-flex': col.aspect_ratio || 1 } : { '--col-width': `${col.width_percentage}%` }}
-                    className={`w-full ${section.layout_style === 'auto' ? 'block-col-auto' : 'block-col flex-grow-0 flex-shrink-0'}`}>
-                    {col.link_url ? (
-                      <Link href={col.link_url} className="block w-full h-full">
-                        {col.image_url && <Image width={800} height={800} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition" alt={`Block ${idx}`} />}
-                      </Link>
-                    ) : (
-                      <div className="w-full h-full">
-                        {col.image_url && <Image width={800} height={800} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm" alt={`Block ${idx}`} />}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {(section.config_data || []).map((col, idx) => {
+                  const rawLink = col.link_url || '';
+                  const hasLink = rawLink.trim().length > 0;
+                  const linkHref = hasLink ? rawLink.trim() : '#';
+                  const isExternal = linkHref.startsWith('http://') || linkHref.startsWith('https://');
+
+                  return (
+                    <div key={idx}
+                      style={section.layout_style === 'auto' ? { '--col-flex': col.aspect_ratio || 1 } : { '--col-width': `${col.width_percentage}%` }}
+                      className={`w-full ${section.layout_style === 'auto' ? 'block-col-auto' : 'block-col flex-grow-0 flex-shrink-0'}`}>
+                      {hasLink ? (
+                        <Link href={linkHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="block w-full h-full">
+                          {col.image_url && <Image width={1200} height={600} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition" alt={`Block ${idx}`} />}
+                        </Link>
+                      ) : (
+                        <div className="w-full h-full">
+                          {col.image_url && <Image width={1200} height={600} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm" alt={`Block ${idx}`} />}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </section>
           );

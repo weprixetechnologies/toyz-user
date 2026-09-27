@@ -33,14 +33,14 @@ export default function HeroCarousel({ banners }) {
           >
             {banner.link_url ? (
               <Link href={banner.link_url} className="block w-full h-full">
-                <Image width={800} height={800} 
+                <Image width={1920} height={500} 
                   src={banner.image_url} 
                   alt={banner.title || 'Banner'} 
                   className="w-full h-auto block"
                 />
               </Link>
             ) : (
-              <Image width={800} height={800} 
+              <Image width={1920} height={500} 
                 src={banner.image_url} 
                 alt={banner.title || 'Banner'} 
                 className="w-full h-auto block"

@@ -40,15 +40,23 @@ export default function ProfilePage() {
 
     const toastId = toast.loading('Uploading image...');
     try {
-      const form = new FormData();
-      form.append('image', file);
+      const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+      const folder = type === 'avatar' ? 'users/avatars' : 'users/covers';
+      const key = `${folder}/${filename}`;
       
-      const res = await api.post('/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post(`/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(file.type)}`);
       
-      if (res.success && res.data?.url) {
-        setFormData(prev => ({ ...prev, [type]: res.data.url }));
+      if (res.success && (res.data?.uploadUrl || res.data?.fileUrl)) {
+        const fullUploadUrl = res.data.uploadUrl.startsWith('http') ? res.data.uploadUrl : api.baseURL.replace('/api/v1', '') + res.data.uploadUrl;
+        
+        await fetch(fullUploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file
+        });
+        
+        const finalUrl = res.data.fileUrl || res.data.uploadUrl;
+        setFormData(prev => ({ ...prev, [type]: finalUrl }));
         toast.success('Image uploaded successfully', { id: toastId });
       } else {
         throw new Error(res.message || 'Failed to upload');

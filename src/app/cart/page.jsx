@@ -2,16 +2,36 @@
 import Image from "next/image";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
-import { api } from '../../lib/api';
+import { api, tokenStore } from '../../lib/api';
 import { Trash2, ShoppingBag, ArrowRight, Tag, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import AuthModal from '../../components/AuthModal';
 
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const router = useRouter();
+  const { cart, updateQuantity, removeFromCart, clearCart, fetchCart } = useCart();
   const [couponCode, setCouponCode] = useState('');
   const [couponMsg, setCouponMsg] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!tokenStore.getAccess());
+  }, []);
+
+  const onAuthSuccess = async () => {
+    setAuthModalOpen(false);
+    setIsLoggedIn(true);
+    try {
+      await api.post('/cart/merge', { guestToken: localStorage.getItem('guest_token') });
+      if (fetchCart) await fetchCart();
+    } catch (err) {
+      console.error('Failed to merge cart after login', err);
+    }
+  };
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -159,14 +179,28 @@ export default function CartPage() {
             </div>
           </div>
 
-          <Link
-            href="/checkout"
-            className="w-full bg-sky-600 text-white font-bold py-3.5 rounded-xl hover:bg-sky-700 transition flex items-center justify-center gap-2 shadow-lg"
-          >
-            Proceed to Checkout <ArrowRight size={18} />
-          </Link>
+          {isLoggedIn ? (
+            <button
+              onClick={() => router.push('/checkout')}
+              className="w-full bg-sky-600 text-white font-bold py-3.5 rounded-xl hover:bg-sky-700 transition flex items-center justify-center gap-2 shadow-lg"
+            >
+              Proceed to Checkout <ArrowRight size={18} />
+            </button>
+          ) : (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-lg"
+            >
+              Login to Checkout <ArrowRight size={18} />
+            </button>
+          )}
         </div>
       </div>
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+        onSuccess={onAuthSuccess} 
+      />
     </div>
   );
 }

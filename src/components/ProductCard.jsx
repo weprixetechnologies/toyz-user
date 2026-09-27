@@ -163,7 +163,7 @@ export default function ProductCard({ product }) {
             {/* Add to cart button */}
             {product.product_type === 'variable' ? (
               <Link
-                href={`/product/${product.slug}`}
+                href={`/products/${product.slug || product.id}`}
                 className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 bg-[#17202A] hover:bg-[#F51F2D] text-white shadow-sm hover:shadow-md"
                 title="Select Options"
               >
