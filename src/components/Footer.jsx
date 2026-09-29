@@ -31,6 +31,7 @@ export default function Footer() {
               <li><Link href="/categories/puzzles" className="hover:text-[#F51F2D] transition-colors">Puzzles & Games</Link></li>
               <li><Link href="/categories/educational" className="hover:text-[#F51F2D] transition-colors">Educational Toys</Link></li>
               <li><Link href="/categories/toddler" className="hover:text-[#F51F2D] transition-colors">Baby & Toddler</Link></li>
+              <li><Link href="/account/apply-reseller" className="hover:text-[#F51F2D] transition-colors text-amber-400">Apply as Reseller</Link></li>
             </ul>
           </div>
 

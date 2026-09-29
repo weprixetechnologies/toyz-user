@@ -24,6 +24,7 @@ export default function AccountLayout({ children }) {
     { label: 'Wishlist', icon: Heart, href: '/account/wishlist' },
     { label: 'Addresses', icon: MapPin, href: '/account/addresses' },
     { label: 'My Reviews', icon: Star, href: '/account/reviews' },
+    { label: 'Apply as Reseller', icon: CreditCard, href: '/account/apply-reseller' },
     { label: 'Logout', icon: LogOut, href: '#', onClick: handleLogout },
   ];
 
