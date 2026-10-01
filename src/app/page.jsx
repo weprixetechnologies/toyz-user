@@ -9,7 +9,7 @@ export const revalidate = 60; // ISR revalidate every 60 seconds
 
 async function fetchHomepageData() {
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181:46711/api/v1';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend.provokeplaytech.com/api/v1';
 
     const [catRes, bannerRes, sectionRes] = await Promise.all([
       fetch(`${API_URL}/categories`, { next: { revalidate: 60 } }).then(res => res.json()),
