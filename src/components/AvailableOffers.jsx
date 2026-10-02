@@ -1,17 +1,30 @@
 'use client';
 
-import { Check, Lock, Tag } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Lock, Tag, X } from 'lucide-react';
 
 export default function AvailableOffers({ offers = [], selectedIds = [], onToggle, isRetailer = false }) {
+  const [open, setOpen] = useState(false);
   if (!offers.length) return null;
+  const appliedCount = offers.filter(offer => selectedIds.includes(String(offer.id)) && offer.applied !== false).length;
 
   return (
-    <section className="bg-white p-6 rounded-2xl border border-gray-200 space-y-3">
-      <div className="flex items-center gap-2">
-        <Tag className="text-sky-600" size={20} />
-        <h3 className="font-bold text-gray-900 text-lg">AVAILABLE OFFERS</h3>
-      </div>
-      <div className="space-y-2">
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="w-full bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-100 rounded-2xl p-4 flex items-center justify-between text-left hover:border-pink-300 transition">
+        <span className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center"><Tag size={20} /></span>
+          <span><span className="block font-black text-gray-900">AVAILABLE OFFERS</span><span className="block text-xs text-gray-500">View eligible offers and apply one</span></span>
+        </span>
+        <span className="text-xs font-black text-pink-600">{appliedCount ? `${appliedCount} APPLIED` : 'VIEW ALL'}</span>
+      </button>
+
+      {open && <div className="fixed inset-0 z-[100] bg-slate-950/50 p-4 flex items-center justify-center" onClick={() => setOpen(false)}>
+        <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-5 space-y-4" onClick={(event) => event.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div><h3 className="font-black text-gray-900 text-lg">AVAILABLE OFFERS</h3><p className="text-xs text-gray-500">Choose an offer to apply to this order.</p></div>
+            <button type="button" onClick={() => setOpen(false)} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100" title="Close offers"><X size={18} /></button>
+          </div>
+          <div className="space-y-2">
         {offers.map((offer) => {
           const selected = selectedIds.includes(String(offer.id)) && offer.applied !== false;
           const blocked = isRetailer || !offer.eligible;
@@ -43,7 +56,9 @@ export default function AvailableOffers({ offers = [], selectedIds = [], onToggl
             </div>
           );
         })}
-      </div>
-    </section>
+          </div>
+        </div>
+      </div>}
+    </>
   );
 }

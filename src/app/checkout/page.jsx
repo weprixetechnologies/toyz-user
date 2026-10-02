@@ -182,6 +182,21 @@ function CheckoutContent() {
     evaluate();
   }, [rawSubtotal, appliedCoupon, selectedOfferIds, isReseller]);
 
+  useEffect(() => {
+    const address = addresses.find(item => item.id?.toString() === selectedAddressId);
+    if (!address?.pin_code || rawSubtotal <= 0) return;
+    api.get('/cart/shipping-options', {
+      pin_code: address.pin_code,
+      subtotal: rawSubtotal
+    }).then((res) => {
+      if (res.success) {
+        const options = res.data?.options || res.data || [];
+        setShippingOptions(options);
+        setSelectedShipping(options[0] || null);
+      }
+    });
+  }, [addresses, selectedAddressId, rawSubtotal]);
+
   const toggleOffer = (id) => {
     if (isReseller) return;
     setSelectedOfferIds((current) => {
@@ -192,8 +207,8 @@ function CheckoutContent() {
   };
 
   const finalSubtotal = evaluation ? evaluation.final_subtotal : rawSubtotal;
-  const shippingCost = isReseller ? 0 : (selectedShipping ? parseFloat(selectedShipping.cost || 0) : 50);
-  const shippingText = isReseller ? 'To Be Calculated' : `₹${shippingCost.toLocaleString('en-IN')}`;
+  const shippingCost = selectedShipping ? parseFloat(selectedShipping.cost || 0) : 0;
+  const shippingText = selectedShipping ? `₹${shippingCost.toLocaleString('en-IN')}` : 'Enter address to calculate';
   const grandTotal = finalSubtotal + shippingCost;
 
   if (loading) {

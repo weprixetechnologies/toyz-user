@@ -7,7 +7,8 @@ import { useCart } from '../../context/CartContext';
 import { api, tokenStore } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import AvailableOffers from '../../components/AvailableOffers';
-import { Trash2, ShoppingBag, ArrowRight, Tag, CheckCircle } from 'lucide-react';
+import YouMightAlsoLike from '../../components/YouMightAlsoLike';
+import { Trash2, ShoppingBag, ArrowRight, Tag, MapPin, Truck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AuthModal from '../../components/AuthModal';
 
@@ -22,6 +23,10 @@ export default function CartPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedOfferIds, setSelectedOfferIds] = useState([]);
   const [offerEvaluation, setOfferEvaluation] = useState(null);
+  const [pincode, setPincode] = useState('');
+  const [shippingQuote, setShippingQuote] = useState(null);
+  const [pincodeMessage, setPincodeMessage] = useState('');
+  const [checkingPincode, setCheckingPincode] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(!!tokenStore.getAccess());
@@ -39,6 +44,7 @@ export default function CartPage() {
     try {
       await api.post('/cart/merge', { guestToken: localStorage.getItem('guest_token') });
       if (fetchCart) await fetchCart();
+      router.push('/checkout');
     } catch (err) {
       console.error('Failed to merge cart after login', err);
     }
@@ -78,6 +84,25 @@ export default function CartPage() {
 
   const displayedSubtotal = offerEvaluation?.final_subtotal ?? subtotal;
 
+  const checkPincode = async (event) => {
+    event?.preventDefault();
+    if (!/^\d{6}$/.test(pincode.trim())) {
+      setPincodeMessage('Enter a valid 6-digit pincode.');
+      return;
+    }
+    setCheckingPincode(true);
+    const res = await api.get('/cart/shipping-options', { pin_code: pincode.trim(), subtotal: displayedSubtotal });
+    if (res.success) {
+      const options = res.data?.options || res.data || [];
+      setShippingQuote(options[0] || null);
+      setPincodeMessage(options[0]?.source === 'pincode' ? 'Pincode shipping rate applied.' : 'Pincode not configured. Fallback shipping rate applied.');
+    } else {
+      setShippingQuote(null);
+      setPincodeMessage(res.message || 'Unable to check this pincode.');
+    }
+    setCheckingPincode(false);
+  };
+
   if (items.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4">
@@ -100,7 +125,7 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items Table */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden divide-y divide-gray-100">
             {items.map((item) => {
               const itemPrice = parseFloat(item.price || item.unit_price || item.sale_price || item.base_price || 0);
               const lineTotal = itemPrice * (item.qty || 1);
@@ -167,16 +192,16 @@ export default function CartPage() {
           </div>
         </div>
 
+        {/* Order Summary & Coupon Sidebar */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 h-fit space-y-6">
+          <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Order Summary</h3>
+
           <AvailableOffers
             offers={offerEvaluation?.available_offers || []}
             selectedIds={selectedOfferIds}
             onToggle={toggleOffer}
             isRetailer={isReseller}
           />
-
-          {/* Order Summary & Coupon Sidebar */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 h-fit space-y-6">
-          <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Order Summary</h3>
 
           {/* Coupon Input */}
           <form onSubmit={handleApplyCoupon} className="space-y-2">
@@ -214,13 +239,21 @@ export default function CartPage() {
                 <span>-₹{offerEvaluation.offer_discount.toLocaleString('en-IN')}</span>
               </div>
             )}
+            {!isLoggedIn && <form onSubmit={checkPincode} className="border-t border-gray-100 pt-4 space-y-2">
+              <label className="text-xs font-black text-gray-700 flex items-center gap-1"><MapPin size={14} /> ENTER PINCODE</label>
+              <div className="flex gap-2">
+                <input value={pincode} onChange={event => setPincode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit pincode" inputMode="numeric" className="flex-1 p-2.5 border border-gray-300 rounded-lg text-sm" />
+                <button type="submit" disabled={checkingPincode} className="bg-slate-900 text-white px-3 rounded-lg text-xs font-black disabled:opacity-50">{checkingPincode ? '...' : 'Check'}</button>
+              </div>
+              {pincodeMessage && <p className="text-[10px] text-gray-500">{pincodeMessage}</p>}
+            </form>}
             <div className="flex justify-between text-gray-600">
-              <span>Estimated Shipping</span>
-              <span className="text-emerald-600 font-semibold">Calculated at Checkout</span>
+              <span className="flex items-center gap-1"><Truck size={14} /> Estimated Shipping</span>
+              <span className="font-semibold">{shippingQuote ? `₹${parseFloat(shippingQuote.cost || 0).toLocaleString('en-IN')}` : 'Calculated at Checkout'}</span>
             </div>
             <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
               <span>Total Amount</span>
-              <span className="text-sky-600">₹{displayedSubtotal.toLocaleString('en-IN')}</span>
+              <span className="text-sky-600">₹{(displayedSubtotal + parseFloat(shippingQuote?.cost || 0)).toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -233,14 +266,21 @@ export default function CartPage() {
             </button>
           ) : (
             <button
-              onClick={() => setAuthModalOpen(true)}
+              onClick={() => {
+                if (!shippingQuote) {
+                  setPincodeMessage('Enter and check your pincode before continuing.');
+                  return;
+                }
+                setAuthModalOpen(true);
+              }}
               className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-lg"
             >
-              Login to Checkout <ArrowRight size={18} />
+              Proceed to Login <ArrowRight size={18} />
             </button>
           )}
         </div>
       </div>
+      <YouMightAlsoLike excludeIds={items.map(item => item.product_id)} />
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
