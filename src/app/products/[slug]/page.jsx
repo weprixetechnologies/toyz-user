@@ -65,18 +65,15 @@ export default function ProductDetailPage() {
         const moqVal = isReseller && prod.moq ? prod.moq : 1;
         setQuantity(moqVal);
 
-        const varRes = await api.get(`/products/${prod.id}/variants`);
-        if (varRes.success) {
-          const varList = varRes.data?.variants || varRes.data || [];
-          setVariants(varList);
-          if (varList.length > 0) {
-            // Auto-select first value for each group
-            const autoSelect = {};
-            const firstVar = varList[0];
-            (firstVar.attributes || []).forEach(a => { autoSelect[a.group] = a.value; });
-            setSelectedOptions(autoSelect);
-            setSelectedVariant(firstVar);
-          }
+        const varList = res.data.variants || [];
+        setVariants(varList);
+        if (varList.length > 0) {
+          // Auto-select first value for each group
+          const autoSelect = {};
+          const firstVar = varList[0];
+          (firstVar.attributes || []).forEach(a => { autoSelect[a.group] = a.value; });
+          setSelectedOptions(autoSelect);
+          setSelectedVariant(firstVar);
         }
       }
       // Fetch public settings and active offers in parallel
@@ -218,11 +215,11 @@ export default function ProductDetailPage() {
   // If the variant has a sale price, use it. If not, but the main product has a sale price and the variant price matches the main base price, inherit the main sale price.
   // Otherwise, just use the variant price (which will show no discount).
   const currentPrice = selectedVariant
-    ? (selectedVariant.sale_price 
+    ? (selectedVariant.resolved_price ?? (selectedVariant.sale_price 
         ? selectedVariant.sale_price 
         : (parseFloat(selectedVariant.price) === parseFloat(product.base_price) && product.sale_price 
             ? product.sale_price 
-            : selectedVariant.price))
+            : selectedVariant.price)))
     : (isReseller && product.reseller_price ? product.reseller_price : (product.sale_price || product.base_price));
 
   const moq = isReseller && product.moq ? product.moq : 1;

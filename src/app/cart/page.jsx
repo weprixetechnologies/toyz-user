@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { api, tokenStore } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import AvailableOffers from '../../components/AvailableOffers';
 import { Trash2, ShoppingBag, ArrowRight, Tag, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AuthModal from '../../components/AuthModal';
@@ -12,14 +14,23 @@ import AuthModal from '../../components/AuthModal';
 export default function CartPage() {
   const router = useRouter();
   const { cart, updateQuantity, removeFromCart, clearCart, fetchCart } = useCart();
+  const { isReseller } = useAuth();
   const [couponCode, setCouponCode] = useState('');
   const [couponMsg, setCouponMsg] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedOfferIds, setSelectedOfferIds] = useState([]);
+  const [offerEvaluation, setOfferEvaluation] = useState(null);
 
   useEffect(() => {
     setIsLoggedIn(!!tokenStore.getAccess());
+    try {
+      const saved = JSON.parse(localStorage.getItem('selected_offer_ids') || '[]');
+      setSelectedOfferIds(Array.isArray(saved) ? saved.map(String) : []);
+    } catch (e) {
+      setSelectedOfferIds([]);
+    }
   }, []);
 
   const onAuthSuccess = async () => {
@@ -46,7 +57,26 @@ export default function CartPage() {
   };
 
   const items = cart?.items || [];
-  const subtotal = cart?.subtotal || items.reduce((sum, i) => sum + (parseFloat(i.price || i.unit_price || 0) * (i.qty || 1)), 0);
+  const subtotal = cart?.summary?.subtotal || items.reduce((sum, i) => sum + (parseFloat(i.price || i.unit_price || 0) * (i.qty || 1)), 0);
+
+  useEffect(() => {
+    if (subtotal <= 0) return;
+    const ids = isReseller ? [] : selectedOfferIds;
+    api.post('/offers/validate', { subtotal, selected_offer_ids: ids }).then((res) => {
+      if (res.success) setOfferEvaluation(res.data);
+    });
+  }, [subtotal, selectedOfferIds, isReseller]);
+
+  const toggleOffer = (id) => {
+    if (isReseller) return;
+    setSelectedOfferIds((current) => {
+      const next = current.includes(id) ? current.filter((value) => value !== id) : [...current, id];
+      localStorage.setItem('selected_offer_ids', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const displayedSubtotal = offerEvaluation?.final_subtotal ?? subtotal;
 
   if (items.length === 0) {
     return (
@@ -137,7 +167,14 @@ export default function CartPage() {
           </div>
         </div>
 
-        {/* Order Summary & Coupon Sidebar */}
+          <AvailableOffers
+            offers={offerEvaluation?.available_offers || []}
+            selectedIds={selectedOfferIds}
+            onToggle={toggleOffer}
+            isRetailer={isReseller}
+          />
+
+          {/* Order Summary & Coupon Sidebar */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 h-fit space-y-6">
           <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Order Summary</h3>
 
@@ -152,15 +189,17 @@ export default function CartPage() {
                 placeholder="PROMO10"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
+                disabled={isReseller}
                 className="flex-1 p-2 border border-gray-300 rounded-lg text-xs uppercase focus:outline-none focus:border-sky-500"
               />
-              <button type="submit" className="bg-slate-900 text-white font-bold text-xs px-3 py-2 rounded-lg hover:bg-sky-600">
+              <button type="submit" disabled={isReseller} className="bg-slate-900 text-white font-bold text-xs px-3 py-2 rounded-lg hover:bg-sky-600 disabled:bg-gray-300">
                 Apply
               </button>
             </div>
             {couponMsg && (
               <p className={`text-xs ${appliedCoupon ? 'text-emerald-600 font-semibold' : 'text-red-600'}`}>{couponMsg}</p>
             )}
+            {isReseller && <p className="text-[10px] text-gray-500 font-bold uppercase">RETAILER: Extra offers and coupons are unavailable</p>}
           </form>
 
           {/* Calculation */}
@@ -169,13 +208,19 @@ export default function CartPage() {
               <span>Subtotal</span>
               <span>₹{subtotal.toLocaleString('en-IN')}</span>
             </div>
+            {offerEvaluation?.offer_discount > 0 && (
+              <div className="flex justify-between text-green-600 text-xs">
+                <span>Selected Offer Discount</span>
+                <span>-₹{offerEvaluation.offer_discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div className="flex justify-between text-gray-600">
               <span>Estimated Shipping</span>
               <span className="text-emerald-600 font-semibold">Calculated at Checkout</span>
             </div>
             <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
               <span>Total Amount</span>
-              <span className="text-sky-600">₹{subtotal.toLocaleString('en-IN')}</span>
+              <span className="text-sky-600">₹{displayedSubtotal.toLocaleString('en-IN')}</span>
             </div>
           </div>
 

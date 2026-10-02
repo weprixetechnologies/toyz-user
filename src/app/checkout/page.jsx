@@ -6,6 +6,7 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus } from 'lucide-react';
+import AvailableOffers from '../../components/AvailableOffers';
 
 
 import LoginModal from '../../components/LoginModal';
@@ -40,6 +41,7 @@ function CheckoutContent() {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [evaluation, setEvaluation] = useState(null);
+  const [selectedOfferIds, setSelectedOfferIds] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -56,12 +58,14 @@ function CheckoutContent() {
         const res = await api.get(`/products/${productId}`);
         if (res.success && res.data) {
            const p = res.data.product || res.data;
-           let item = { product_id: p.id, qty, name: p.name, price: p.sale_price || p.base_price, sku: p.sku };
+           const variants = res.data.variants || [];
+           let item = { product_id: p.id, qty, name: p.name, price: p.reseller_price ?? p.sale_price ?? p.base_price, sku: p.sku };
            if (variantId) {
-             const v = (p.variants || []).find(x => x.id.toString() === variantId);
+             const v = variants.find(x => x.id.toString() === variantId);
              if (v) {
                item.variant_id = v.id;
-               item.price = v.sale_price || v.price;
+               item.price = v.resolved_price ?? v.sale_price ?? v.price;
+               item.original_price = v.original_price ?? v.price;
                item.sku = v.sku;
                item.variant_label = v.attributes ? v.attributes.map(a => a.value).join(', ') : '';
              }
@@ -95,6 +99,12 @@ function CheckoutContent() {
       }
 
       setLoading(false);
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem('selected_offer_ids') || '[]');
+      setSelectedOfferIds(Array.isArray(saved) ? saved.map(String) : []);
+    } catch (e) {
+      setSelectedOfferIds([]);
     }
     loadCheckoutData();
   }, []);
@@ -137,7 +147,8 @@ function CheckoutContent() {
       notes: '',
       is_buy_now: isBuyNow,
       buy_now_item: buyNowItem,
-      coupon_code: appliedCoupon
+      coupon_code: appliedCoupon,
+      selected_offer_ids: isReseller ? [] : selectedOfferIds
     };
 
     const res = await api.post('/orders', payload);
@@ -154,18 +165,31 @@ function CheckoutContent() {
   const items = isBuyNow && buyNowItem ? [buyNowItem] : (cart?.items || []);
   const rawSubtotal = isBuyNow && buyNowItem 
     ? (parseFloat(buyNowItem.price || 0) * (buyNowItem.qty || 1))
-    : (cart?.subtotal || items.reduce((sum, i) => sum + (parseFloat(i.price || i.unit_price || 0) * (i.qty || 1)), 0));
+    : (cart?.summary?.subtotal || items.reduce((sum, i) => sum + (parseFloat(i.price || i.unit_price || 0) * (i.qty || 1)), 0));
 
   useEffect(() => {
     async function evaluate() {
       if (rawSubtotal <= 0) return;
-      const res = await api.post('/offers/validate', { subtotal: rawSubtotal, coupon_code: appliedCoupon });
+      const res = await api.post('/offers/validate', {
+        subtotal: rawSubtotal,
+        coupon_code: isReseller ? '' : appliedCoupon,
+        selected_offer_ids: isReseller ? [] : selectedOfferIds
+      });
       if (res.success) {
         setEvaluation(res.data);
       }
     }
     evaluate();
-  }, [rawSubtotal, appliedCoupon]);
+  }, [rawSubtotal, appliedCoupon, selectedOfferIds, isReseller]);
+
+  const toggleOffer = (id) => {
+    if (isReseller) return;
+    setSelectedOfferIds((current) => {
+      const next = current.includes(id) ? current.filter((value) => value !== id) : [...current, id];
+      localStorage.setItem('selected_offer_ids', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const finalSubtotal = evaluation ? evaluation.final_subtotal : rawSubtotal;
   const shippingCost = isReseller ? 0 : (selectedShipping ? parseFloat(selectedShipping.cost || 0) : 50);
@@ -366,17 +390,19 @@ function CheckoutContent() {
           <div className="mb-4">
             <h4 className="font-bold text-xs text-gray-900 mb-2">Have a Coupon?</h4>
             <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={couponCode} 
-                onChange={(e) => setCouponCode(e.target.value)} 
+                <input 
+                  type="text" 
+                  value={couponCode} 
+                  onChange={(e) => setCouponCode(e.target.value)} 
+                  disabled={isReseller}
                 placeholder="Enter Code" 
                 className="flex-1 p-2 border border-gray-300 rounded-lg text-xs"
               />
               <button 
                 type="button" 
                 onClick={() => setAppliedCoupon(couponCode)} 
-                className="bg-sky-600 hover:bg-sky-700 text-white px-4 rounded-lg text-xs font-bold"
+                disabled={isReseller}
+                className="bg-sky-600 hover:bg-sky-700 text-white px-4 rounded-lg text-xs font-bold disabled:bg-gray-300"
               >
                 Apply
               </button>
@@ -387,7 +413,15 @@ function CheckoutContent() {
             {evaluation?.applied_coupon?.valid !== false && evaluation?.applied_coupon?.code && (
               <p className="text-green-600 text-[10px] mt-1">Coupon {evaluation.applied_coupon.code} applied!</p>
             )}
+            {isReseller && <p className="text-gray-500 text-[10px] mt-1 font-bold uppercase">RETAILER: Extra offers and coupons are unavailable</p>}
           </div>
+
+          <AvailableOffers
+            offers={evaluation?.available_offers || []}
+            selectedIds={selectedOfferIds}
+            onToggle={toggleOffer}
+            isRetailer={isReseller}
+          />
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
