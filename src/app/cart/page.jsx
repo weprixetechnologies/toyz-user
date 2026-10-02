@@ -220,31 +220,23 @@ export default function CartPage() {
               <Trash2 size={16} /> Remove Selected
             </button>
           </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-pink-50 rounded-2xl p-4 border border-pink-100 flex items-start gap-4">
-            <div className="bg-pink-100 text-pink-600 p-2 rounded-lg flex-shrink-0">
-              <Ticket size={24} className="rotate-45 text-pink-500" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-gray-900 text-sm">10% Off on Min Order ₹1000</h4>
-              <p className="text-xs text-gray-500 mt-0.5">Use code <span className="font-bold text-red-500">TOY10</span> at checkout</p>
-            </div>
-            <button className="bg-pink-100 text-pink-600 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-pink-200 transition">
-              TOY10 <Copy size={14} />
-            </button>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit space-y-6">
-            <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Order Summary</h3>
-
+          
+          <div className="mt-6">
             <AvailableOffers
               offers={offerEvaluation?.available_offers || []}
               selectedIds={selectedOfferIds}
               onToggle={toggleOffer}
               isRetailer={isReseller}
             />
+          </div>
+
+        </div>
+
+        <div className="space-y-6">
+          
+
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit space-y-6">
+            <h3 className="font-bold text-gray-900 text-lg border-b border-gray-100 pb-3">Order Summary</h3>
 
             <form onSubmit={handleApplyCoupon} className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
@@ -324,32 +316,24 @@ export default function CartPage() {
               </button>
             )}
 
-            <div className="bg-emerald-50 rounded-xl p-3 flex items-center gap-3 border border-emerald-100">
-              <Truck className="text-emerald-600" size={20} />
-              <div>
-                <p className="text-emerald-700 font-bold text-xs">You are eligible for FREE SHIPPING</p>
-                <p className="text-emerald-600 text-[10px]">Add ₹1 more to get free shipping!</p>
+            
+            {shippingQuote?.free_shipping_threshold > 0 && (
+              <div className="bg-emerald-50 rounded-xl p-3 flex items-center gap-3 border border-emerald-100">
+                <Truck className="text-emerald-600" size={20} />
+                <div>
+                  {displayedSubtotal >= shippingQuote.free_shipping_threshold ? (
+                    <p className="text-emerald-700 font-bold text-xs">You are eligible for FREE SHIPPING</p>
+                  ) : (
+                    <>
+                      <p className="text-emerald-700 font-bold text-xs">Add ₹{(shippingQuote.free_shipping_threshold - displayedSubtotal).toLocaleString('en-IN')} more to get free shipping!</p>
+                      <p className="text-emerald-600 text-[10px]">Free shipping on orders above ₹{shippingQuote.free_shipping_threshold.toLocaleString('en-IN')}</p>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="grid grid-cols-4 gap-2 pt-6 border-t border-gray-100">
-              <div className="flex flex-col items-center gap-1 text-center">
-                <ShieldCheck size={20} className="text-gray-700" />
-                <span className="text-[10px] text-gray-500 font-semibold leading-tight">Secure<br/>Payments</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 text-center">
-                <RefreshCcw size={20} className="text-gray-700" />
-                <span className="text-[10px] text-gray-500 font-semibold leading-tight">Easy<br/>Returns</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 text-center">
-                <CheckCircle2 size={20} className="text-gray-700" />
-                <span className="text-[10px] text-gray-500 font-semibold leading-tight">100%<br/>Original</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 text-center">
-                <HeadphonesIcon size={20} className="text-gray-700" />
-                <span className="text-[10px] text-gray-500 font-semibold leading-tight">Dedicated<br/>Support</span>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
