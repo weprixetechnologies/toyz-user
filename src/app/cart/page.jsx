@@ -99,7 +99,7 @@ export default function CartPage() {
 
   const checkPincode = async (event) => {
     event?.preventDefault();
-    if (!/^\\d{6}$/.test(pincode.trim())) {
+    if (!/^\d{6}$/.test(pincode.trim())) {
       setPincodeMessage('Enter a valid 6-digit pincode.');
       return;
     }
@@ -264,7 +264,7 @@ export default function CartPage() {
                 </button>
               </div>
               {couponMsg && (
-                <p className={\`text-xs \${appliedCoupon ? 'text-emerald-600 font-semibold' : 'text-red-600'}\`}>{couponMsg}</p>
+                <p className={`text-xs ${appliedCoupon ? 'text-emerald-600 font-semibold' : 'text-red-600'}`}>{couponMsg}</p>
               )}
               {isReseller && <p className="text-[10px] text-gray-500 font-bold uppercase">RETAILER: Extra offers and coupons are unavailable</p>}
             </form>
@@ -283,14 +283,14 @@ export default function CartPage() {
               {!isLoggedIn && <form onSubmit={checkPincode} className="border-t border-gray-100 pt-4 space-y-2">
                 <label className="text-xs font-black text-gray-700 flex items-center gap-1"><MapPin size={14} /> ENTER PINCODE</label>
                 <div className="flex gap-2">
-                  <input value={pincode} onChange={event => setPincode(event.target.value.replace(/\\D/g, '').slice(0, 6))} placeholder="6-digit pincode" inputMode="numeric" className="flex-1 p-2.5 border border-gray-300 rounded-lg text-sm" />
+                  <input value={pincode} onChange={event => setPincode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit pincode" inputMode="numeric" className="flex-1 p-2.5 border border-gray-300 rounded-lg text-sm" />
                   <button type="submit" disabled={checkingPincode} className="bg-slate-900 text-white px-3 rounded-lg text-xs font-black disabled:opacity-50">{checkingPincode ? '...' : 'Check'}</button>
                 </div>
                 {pincodeMessage && <p className="text-[10px] text-gray-500">{pincodeMessage}</p>}
               </form>}
               <div className="flex justify-between text-gray-600">
                 <span className="flex items-center gap-1">Estimated Shipping <Info size={14} className="text-gray-400" /></span>
-                <span className="text-gray-500">{shippingQuote ? \`₹\${parseFloat(shippingQuote.cost || 0).toLocaleString('en-IN')}\` : 'Calculated at Checkout'}</span>
+                <span className="text-gray-500">{shippingQuote ? `₹${parseFloat(shippingQuote.cost || 0).toLocaleString('en-IN')}` : 'Calculated at Checkout'}</span>
               </div>
             </div>
 
