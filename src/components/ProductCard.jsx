@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { ShoppingCart, CheckCircle, Heart, Star } from 'lucide-react';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
-export default function ProductCard({ product }) {
+function ProductCard({ product, priority = false }) {
   const { isReseller } = useAuth();
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -81,10 +81,13 @@ export default function ProductCard({ product }) {
         <div className="aspect-square bg-[#FFF0D6]/20 flex items-center justify-center overflow-hidden">
           {product.primary_image || product.image || product.images?.[0]?.url ? (
             <Image
-              width={800}
-              height={800}
+              width={600}
+              height={600}
               src={product.primary_image || product.image || product.images?.[0]?.url}
               alt={product.name}
+              priority={priority}
+              loading={priority ? 'eager' : 'lazy'}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 270px"
               className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
@@ -187,3 +190,5 @@ export default function ProductCard({ product }) {
     </div>
   );
 }
+
+export default memo(ProductCard);

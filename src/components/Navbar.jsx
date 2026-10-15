@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -10,6 +11,8 @@ import { api } from '../lib/api';
 import Image from 'next/image';
 
 export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, isReseller } = useAuth();
   const { itemCount } = useCart();
   const { wishlist } = useWishlist();
@@ -20,6 +23,60 @@ export default function Navbar() {
   const searchRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [headerData, setHeaderData] = useState({
+    logo_url: '',
+    logo_text: 'ToyWorld',
+    logo_tagline: 'PLAY • EXPLORE • GROW',
+    show_tagline: true,
+    announcement_bar: {
+      enabled: true,
+      shipping_text: 'Free Shipping on Orders Above ₹999',
+      discount_text: 'Get 10% OFF on First Order | Use Code: TOY10',
+      returns_text: 'Easy Returns | 100% Original Products'
+    }
+  });
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    try {
+      const cached = sessionStorage.getItem('ecom_header_config');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          setHeaderData(prev => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch (_) {}
+
+    async function loadHeader() {
+      try {
+        let res = await api.get('/header');
+        if (!res.success || !res.data) {
+          const setRes = await api.get('/settings');
+          if (setRes.success && setRes.data?.settings?.header_settings) {
+            const raw = setRes.data.settings.header_settings;
+            res = { success: true, data: typeof raw === 'string' ? JSON.parse(raw) : raw };
+          }
+        }
+        if (isMounted && res.success && res.data) {
+          setHeaderData(prev => ({
+            ...prev,
+            ...res.data,
+            announcement_bar: {
+              ...prev.announcement_bar,
+              ...(res.data.announcement_bar || {})
+            }
+          }));
+          try {
+            sessionStorage.setItem('ecom_header_config', JSON.stringify(res.data));
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+    loadHeader();
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -52,29 +109,32 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery.trim())}`;
+      setShowSearchDropdown(false);
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white font-sans border-b border-gray-100 shadow-sm">
       {/* Top Announcement Bar */}
-      <div className="bg-[#071C2B] text-white text-[11px] font-medium py-2 hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-400">🚚</span>
-            <span>Free Shipping on Orders Above ₹999</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-pink-400">🎁</span>
-            <span>Get 10% OFF on First Order | Use Code: <strong>TOY10</strong></span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-300">
-            <Star size={12} className="text-yellow-400 fill-yellow-400" />
-            <span>Easy Returns | 100% Original Products</span>
+      {headerData.announcement_bar?.enabled !== false && (
+        <div className="bg-[#071C2B] text-white text-[11px] font-medium py-2 hidden md:block">
+          <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-400">🚚</span>
+              <span>{headerData.announcement_bar?.shipping_text || 'Free Shipping on Orders Above ₹999'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-pink-400">🎁</span>
+              <span>{headerData.announcement_bar?.discount_text || 'Get 10% OFF on First Order | Use Code: TOY10'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-300">
+              <Star size={12} className="text-yellow-400 fill-yellow-400" />
+              <span>{headerData.announcement_bar?.returns_text || 'Easy Returns | 100% Original Products'}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Middle Bar */}
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-6">
@@ -86,19 +146,36 @@ export default function Navbar() {
 
         {/* Brand Logo */}
         <Link href="/" className="flex flex-col flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-2xl shadow-inner">
-              🐻
-            </div>
-            <div>
-              <div className="text-2xl font-black tracking-tight leading-none">
-                <span className="text-[#F51F2D]">Toy</span><span className="text-[#1877F2]">World</span>
+          {headerData.logo_url && !logoError ? (
+            <img
+              src={headerData.logo_url}
+              alt={headerData.logo_text || 'ToyWorld'}
+              onError={() => setLogoError(true)}
+              className="max-h-12 w-auto object-contain"
+            />
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-2xl shadow-inner">
+                🐻
               </div>
-              <div className="text-[9px] font-bold text-gray-500 tracking-widest mt-0.5">
-                PLAY • EXPLORE • GROW
+              <div>
+                <div className="text-2xl font-black tracking-tight leading-none">
+                  {headerData.logo_text === 'ToyWorld' || !headerData.logo_text ? (
+                    <>
+                      <span className="text-[#F51F2D]">Toy</span><span className="text-[#1877F2]">World</span>
+                    </>
+                  ) : (
+                    <span className="text-gray-900">{headerData.logo_text}</span>
+                  )}
+                </div>
+                {headerData.show_tagline !== false && headerData.logo_tagline && (
+                  <div className="text-[9px] font-bold text-gray-500 tracking-widest mt-0.5 uppercase">
+                    {headerData.logo_tagline}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
         </Link>
 
         {/* Search Bar */}
@@ -225,10 +302,11 @@ export default function Navbar() {
       {/* Bottom Category Bar */}
       <div className="hidden md:block border-t border-gray-100 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-8 py-2.5">
-          <Link href="/" className="text-sm font-bold text-gray-800 hover:text-[#F51F2D] transition">Home</Link>
-          <Link href="/products" className="text-sm font-bold text-gray-800 hover:text-[#F51F2D] transition">Shop</Link>
-          <Link href="/categories" className="text-sm font-bold text-gray-800 hover:text-[#F51F2D] transition">Categories</Link>
-          <Link href="/offers" className="text-sm font-bold text-gray-800 hover:text-[#F51F2D] transition">Offers</Link>
+          <Link href="/" className={`text-sm font-bold transition ${pathname === '/' ? 'text-[#F51F2D]' : 'text-gray-800 hover:text-[#F51F2D]'}`}>Home</Link>
+          <Link href="/products" className={`text-sm font-bold transition ${pathname?.startsWith('/products') ? 'text-[#F51F2D]' : 'text-gray-800 hover:text-[#F51F2D]'}`}>Shop</Link>
+          <Link href="/categories" className={`text-sm font-bold transition ${pathname?.startsWith('/categories') ? 'text-[#F51F2D]' : 'text-gray-800 hover:text-[#F51F2D]'}`}>Categories</Link>
+          <Link href="/offers" className={`text-sm font-bold transition ${pathname?.startsWith('/offers') ? 'text-[#F51F2D]' : 'text-gray-800 hover:text-[#F51F2D]'}`}>Offers</Link>
+          <Link href="/blogs" className={`text-sm font-bold transition ${pathname?.startsWith('/blogs') ? 'text-[#F51F2D]' : 'text-gray-800 hover:text-[#F51F2D]'}`}>Blogs</Link>
 
           <div className="ml-auto flex items-center gap-6">
             {isReseller && (
@@ -321,11 +399,12 @@ export default function Navbar() {
             )}
           </div>
           <nav className="flex flex-col gap-3 font-bold text-gray-800">
-            <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link href="/products" onClick={() => setMenuOpen(false)}>Shop</Link>
-            <Link href="/categories" onClick={() => setMenuOpen(false)}>Categories</Link>
-            <Link href="/offers" onClick={() => setMenuOpen(false)}>Offers</Link>
-            <Link href="/contact" onClick={() => setMenuOpen(false)}>Contact Us</Link>
+            <Link href="/" onClick={() => setMenuOpen(false)} className={pathname === '/' ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Home</Link>
+            <Link href="/products" onClick={() => setMenuOpen(false)} className={pathname?.startsWith('/products') ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Shop</Link>
+            <Link href="/categories" onClick={() => setMenuOpen(false)} className={pathname?.startsWith('/categories') ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Categories</Link>
+            <Link href="/offers" onClick={() => setMenuOpen(false)} className={pathname?.startsWith('/offers') ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Offers</Link>
+            <Link href="/blogs" onClick={() => setMenuOpen(false)} className={pathname?.startsWith('/blogs') ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Blogs</Link>
+            <Link href="/contact" onClick={() => setMenuOpen(false)} className={pathname?.startsWith('/contact') ? 'text-[#F51F2D]' : 'hover:text-[#F51F2D]'}>Contact Us</Link>
           </nav>
         </div>
       )}

@@ -167,9 +167,15 @@ export default function CartPage() {
                     <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">Best Seller</span>
                     <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mt-1">{item.product_name || item.name}</h4>
                     <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 font-medium">
-                      <span className="flex items-center gap-1 text-emerald-600 font-bold"><Package size={14}/> In Stock</span>
-                      <span className="border-l border-gray-300 pl-3">Age 6+</span>
-                      <span className="border-l border-gray-300 pl-3 flex items-center gap-1"><Star size={14} className="text-amber-400 fill-amber-400"/> 4.6 <span className="text-gray-400">(120 reviews)</span></span>
+                      {item.in_stock !== false ? (
+    <span className="flex items-center gap-1 text-emerald-600 font-bold">
+      <Package size={14}/> In Stock
+    </span>
+  ) : (
+    <span className="flex items-center gap-1 text-red-500 font-bold">
+      <Package size={14}/> Out of Stock
+    </span>
+  )}
                     </div>
                   </div>
 

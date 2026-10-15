@@ -118,6 +118,7 @@ async function _fetch(endpoint, options = {}, _retry = false) {
   const config = {
     method: options.method ?? 'GET',
     headers,
+    signal: options.signal,
     ...(options.body !== undefined
       ? { body: typeof options.body === 'string' ? options.body : JSON.stringify(options.body) }
       : {}),
@@ -127,6 +128,9 @@ async function _fetch(endpoint, options = {}, _retry = false) {
   try {
     response = await fetch(url, config);
   } catch (err) {
+    if (err.name === 'AbortError') {
+      return { success: false, aborted: true, message: 'Request aborted' };
+    }
     // Network-level failure (offline, DNS, CORS preflight abort, etc.)
     return _err(0, err.message || 'Network error — check your connection.');
   }
