@@ -29,6 +29,28 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var c = localStorage.getItem('ecom_header_config') || sessionStorage.getItem('ecom_header_config');
+                if (c) {
+                  var p = JSON.parse(c);
+                  if (p && p.logo_url) {
+                    var l = document.createElement('link');
+                    l.rel = 'preload';
+                    l.as = 'image';
+                    l.href = p.logo_url;
+                    l.fetchPriority = 'high';
+                    document.head.appendChild(l);
+                  }
+                }
+              } catch(e) {}
+            `
+          }}
+        />
+      </head>
       <body className={`flex flex-col min-h-screen ${montserrat.variable} ${ledger.variable} font-sans`}>
         <AuthProvider>
           <Toaster position="top-center" />

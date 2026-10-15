@@ -25,9 +25,11 @@ export default function Navbar() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [headerData, setHeaderData] = useState({
     logo_url: '',
-    logo_text: 'ToyWorld',
-    logo_tagline: 'PLAY • EXPLORE • GROW',
-    show_tagline: true,
+    logo_text: '',
+    logo_tagline: '',
+    logo_width: 200,
+    logo_width_mobile: 150,
+    show_tagline: false,
     announcement_bar: {
       enabled: true,
       shipping_text: 'Free Shipping on Orders Above ₹999',
@@ -35,16 +37,20 @@ export default function Navbar() {
       returns_text: 'Easy Returns | 100% Original Products'
     }
   });
+  const [loadingLogo, setLoadingLogo] = useState(true);
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     try {
-      const cached = sessionStorage.getItem('ecom_header_config');
+      const cached = localStorage.getItem('ecom_header_config') || sessionStorage.getItem('ecom_header_config');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && typeof parsed === 'object') {
           setHeaderData(prev => ({ ...prev, ...parsed }));
+          if (parsed.logo_url) {
+            setLoadingLogo(false);
+          }
         }
       }
     } catch (_) {}
@@ -69,10 +75,16 @@ export default function Navbar() {
             }
           }));
           try {
+            localStorage.setItem('ecom_header_config', JSON.stringify(res.data));
             sessionStorage.setItem('ecom_header_config', JSON.stringify(res.data));
           } catch (_) {}
         }
-      } catch (_) {}
+      } catch (_) {
+      } finally {
+        if (isMounted) {
+          setLoadingLogo(false);
+        }
+      }
     }
     loadHeader();
     return () => { isMounted = false; };
@@ -114,6 +126,9 @@ export default function Navbar() {
     }
   };
 
+  const desktopWidth = Math.max(200, Number(headerData.logo_width) || 200);
+  const mobileWidth = Number(headerData.logo_width_mobile) || Math.min(160, Math.round(desktopWidth * 0.75));
+
   return (
     <header className="sticky top-0 z-50 bg-white font-sans border-b border-gray-100 shadow-sm">
       {/* Top Announcement Bar */}
@@ -145,36 +160,52 @@ export default function Navbar() {
         </button>
 
         {/* Brand Logo */}
-        <Link href="/" className="flex flex-col flex-shrink-0">
-          {headerData.logo_url && !logoError ? (
-            <img
-              src={headerData.logo_url}
-              alt={headerData.logo_text || 'ToyWorld'}
-              onError={() => setLogoError(true)}
-              className="max-h-12 w-auto object-contain"
+        <Link href="/" className="flex flex-col flex-shrink-0" aria-label="Home">
+          {loadingLogo ? (
+            /* Skeleton Loader */
+            <div
+              className="h-9 sm:h-11 bg-gray-200/80 animate-pulse rounded-lg flex items-center justify-center flex-shrink-0 w-[var(--logo-w-mobile)] md:w-[var(--logo-w-desktop)] md:min-w-[200px]"
+              style={{
+                '--logo-w-mobile': `${mobileWidth}px`,
+                '--logo-w-desktop': `${desktopWidth}px`
+              }}
+              aria-label="Loading logo"
             />
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-orange-400 rounded-full flex items-center justify-center text-2xl shadow-inner">
-                🐻
-              </div>
-              <div>
-                <div className="text-2xl font-black tracking-tight leading-none">
-                  {headerData.logo_text === 'ToyWorld' || !headerData.logo_text ? (
-                    <>
-                      <span className="text-[#F51F2D]">Toy</span><span className="text-[#1877F2]">World</span>
-                    </>
-                  ) : (
-                    <span className="text-gray-900">{headerData.logo_text}</span>
-                  )}
-                </div>
-                {headerData.show_tagline !== false && headerData.logo_tagline && (
-                  <div className="text-[9px] font-bold text-gray-500 tracking-widest mt-0.5 uppercase">
-                    {headerData.logo_tagline}
-                  </div>
-                )}
-              </div>
+          ) : headerData.logo_url && !logoError ? (
+            <div className="flex items-center flex-shrink-0">
+              <img
+                src={headerData.logo_url}
+                alt={headerData.logo_text || 'Store Logo'}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                onError={() => setLogoError(true)}
+                className="h-auto object-contain block max-w-full w-[var(--logo-w-mobile)] md:w-[var(--logo-w-desktop)] md:min-w-[200px] transition-all"
+                style={{
+                  '--logo-w-mobile': `${mobileWidth}px`,
+                  '--logo-w-desktop': `${desktopWidth}px`
+                }}
+              />
             </div>
+          ) : headerData.logo_text ? (
+            <div className="flex flex-col flex-shrink-0">
+              <div className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight leading-none">
+                {headerData.logo_text}
+              </div>
+              {headerData.show_tagline !== false && headerData.logo_tagline && (
+                <div className="text-[9px] font-bold text-gray-500 tracking-widest mt-0.5 uppercase">
+                  {headerData.logo_tagline}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="h-9 sm:h-11 bg-gray-100 rounded-lg flex-shrink-0 w-[var(--logo-w-mobile)] md:w-[var(--logo-w-desktop)] md:min-w-[200px]"
+              style={{
+                '--logo-w-mobile': `${mobileWidth}px`,
+                '--logo-w-desktop': `${desktopWidth}px`
+              }}
+            />
           )}
         </Link>
 
