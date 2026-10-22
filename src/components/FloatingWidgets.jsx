@@ -151,7 +151,8 @@ export default function FloatingWidgets() {
       <div
         ref={modalRef}
         aria-hidden={!activeModal}
-        className={`fixed bottom-24 right-5 z-50 w-[360px] sm:w-[390px] max-w-[calc(100vw-32px)] max-h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden origin-bottom-right transition-all duration-200 ease-out ${
+        style={{ zIndex: 9999 }}
+        className={`fixed bottom-24 right-5 z-[9999] w-[360px] sm:w-[390px] max-w-[calc(100vw-32px)] max-h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden origin-bottom-right transition-all duration-200 ease-out ${
           activeModal
             ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto'
             : 'scale-75 opacity-0 translate-y-8 pointer-events-none'
@@ -355,10 +356,17 @@ export default function FloatingWidgets() {
       </div>
 
       {/* Floating Action Buttons at bottom right */}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 pointer-events-none select-none">
+      <div
+        style={{ zIndex: 9990 }}
+        className="fixed bottom-5 right-5 z-[9990] flex flex-col items-end gap-3 pointer-events-none select-none"
+      >
         {/* 1. Floating Contact Form Button (Lead Collection) */}
         {contactEnabled && (
-          <div className="relative group pointer-events-auto">
+          <div
+            className={`relative group pointer-events-auto transition-all duration-200 ${
+              activeModal === 'chatbot' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
+            }`}
+          >
             {/* Tooltip */}
             <div className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150">
               {config.contact_form?.button_tooltip || 'Quick Inquiry'}
@@ -392,7 +400,11 @@ export default function FloatingWidgets() {
 
         {/* 2. Floating Chatbot Button */}
         {chatbotEnabled && (
-          <div className="relative group pointer-events-auto">
+          <div
+            className={`relative group pointer-events-auto transition-all duration-200 ${
+              activeModal === 'contact' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
+            }`}
+          >
             {/* Tooltip */}
             <div className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150">
               {config.chatbot?.button_tooltip || 'Chat with Us'}
