@@ -27,3 +27,33 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background-size: 200% 200%;
   animation: moving-gradient 3s ease infinite;
 }
+
+@keyframes widget-wiggle {
+  0%, 82%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  85% {
+    transform: scale(1.08) rotate(-7deg);
+  }
+  88% {
+    transform: scale(1.08) rotate(7deg);
+  }
+  91% {
+    transform: scale(1.08) rotate(-5deg);
+  }
+  94% {
+    transform: scale(1.08) rotate(5deg);
+  }
+  97% {
+    transform: scale(1.04) rotate(-2deg);
+  }
+}
+
+.animate-widget-wiggle {
+  animation: widget-wiggle var(--wiggle-duration, 6s) ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-widget-wiggle:hover {
+  animation-play-state: paused;
+}

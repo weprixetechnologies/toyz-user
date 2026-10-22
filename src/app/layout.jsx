@@ -19,6 +19,7 @@ import { CartProvider } from '../context/CartContext';
 import { WishlistProvider } from '../context/WishlistContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import FloatingWidgets from '../components/FloatingWidgets';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
@@ -59,6 +60,7 @@ export default function RootLayout({ children }) {
               <Navbar />
               <main className="flex-grow">{children}</main>
               <Footer />
+              <FloatingWidgets />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
