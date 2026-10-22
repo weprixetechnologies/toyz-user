@@ -11,7 +11,7 @@ import api from '@/lib/api';
 const DEFAULT_FOOTER_CONFIG = {
   brand: {
     logo_url: '',
-    logo_text: 'ToyWorld',
+    logo_text: 'Provoke Playtech',
     about_text: 'Bringing joy to kids of all ages with premium toys, next-level RC cars, and educational games. Playtime never stops!',
     show_brand_column: true
   },
@@ -40,7 +40,7 @@ const DEFAULT_FOOTER_CONFIG = {
       links: [
         { id: 'l-8', label: 'Track Your Order', url: '/account/orders', target: '_self', highlight: false },
         { id: 'l-9', label: 'Shipping & Returns', url: '/shipping-returns', target: '_self', highlight: false },
-        { id: 'l-blog', label: 'ToyWorld Blog', url: '/blogs', target: '_self', highlight: false },
+        { id: 'l-blog', label: 'Provoke Playtech Blog', url: '/blogs', target: '_self', highlight: false },
         { id: 'l-10', label: 'FAQ', url: '/faq', target: '_self', highlight: false },
         { id: 'l-11', label: 'Contact Us', url: '/contact', target: '_self', highlight: false }
       ]
@@ -49,7 +49,7 @@ const DEFAULT_FOOTER_CONFIG = {
       id: 'col-contact',
       heading: 'Contact Us',
       type: 'custom',
-      custom_content: 'Email: hello@toyworld.com\nPhone: +1 (800) TOY-WORLD\nAddress: 123 Playtime Avenue, Fun City, TX 75001',
+      custom_content: 'Email: hello@Provoke Playtech.com\nPhone: +1 (800) TOY-WORLD\nAddress: 123 Playtime Avenue, Fun City, TX 75001',
       links: []
     }
   ],
@@ -65,7 +65,7 @@ const DEFAULT_FOOTER_CONFIG = {
   },
   bottom_bar: {
     enabled: true,
-    copyright_text: '© {year} ToyWorld Inc. All rights reserved.',
+    copyright_text: '© {year} Provoke Playtech Inc. All rights reserved.',
     links: [
       { id: 'bot-1', label: 'Privacy Policy', url: '/privacy', target: '_self' },
       { id: 'bot-2', label: 'Terms of Service', url: '/terms', target: '_self' }
@@ -99,7 +99,7 @@ export default function Footer() {
             setFooterData(parsed);
           }
         }
-      } catch (_) {}
+      } catch (_) { }
 
       try {
         // Try dedicated /footer endpoint first
@@ -120,7 +120,7 @@ export default function Footer() {
           setFooterData(res.data);
           try {
             sessionStorage.setItem('ecom_footer_config', JSON.stringify(res.data));
-          } catch (_) {}
+          } catch (_) { }
         }
       } catch (err) {
         // Silently fallback to default config
@@ -158,7 +158,7 @@ export default function Footer() {
   };
 
   const currentYear = new Date().getFullYear().toString();
-  const copyrightText = (bottom_bar.copyright_text || '© {year} ToyWorld Inc. All rights reserved.')
+  const copyrightText = (bottom_bar.copyright_text || '© {year} Provoke Playtech Inc. All rights reserved.')
     .replace('{year}', currentYear);
 
   return (
@@ -179,7 +179,7 @@ export default function Footer() {
                 ) : (
                   <>
                     <Gift size={32} className="text-[#F51F2D] flex-shrink-0" />
-                    <span>{brand.logo_text || 'ToyWorld'}</span>
+                    <span>{brand.logo_text || 'Provoke Playtech'}</span>
                   </>
                 )}
               </Link>
@@ -235,9 +235,8 @@ export default function Footer() {
                       col.links.map((link, lIdx) => {
                         const isInternal = link.url && link.url.startsWith('/') && !link.url.startsWith('//');
                         const isBlank = link.target === '_blank';
-                        const linkClass = `transition-colors hover:text-[#F51F2D] ${
-                          link.highlight ? 'text-amber-400 font-semibold' : ''
-                        }`;
+                        const linkClass = `transition-colors hover:text-[#F51F2D] ${link.highlight ? 'text-amber-400 font-semibold' : ''
+                          }`;
 
                         return (
                           <li key={link.id || lIdx}>

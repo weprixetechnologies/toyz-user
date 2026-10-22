@@ -92,7 +92,7 @@ export default function BlogCard({ blog, priority = false }) {
       {/* Footer / Read More Button */}
       <div className="px-6 pb-6 pt-2 border-t border-gray-100 flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-500">
-          By {blog.author_name || 'ToyWorld Team'}
+          By {blog.author_name || 'Provoke Playtech Team'}
         </span>
 
         <Link

@@ -139,7 +139,7 @@ function BlogsContent() {
             <div className="md:col-span-7 space-y-4 text-center md:text-left">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-sm border border-red-100 text-xs font-bold text-[#F51F2D]">
                 <Sparkles size={14} className="text-yellow-500" />
-                <span>TOYWORLD STORIES & GUIDES</span>
+                <span>Provoke Playtech STORIES & GUIDES</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#17202A] tracking-tight leading-tight">
@@ -147,7 +147,7 @@ function BlogsContent() {
               </h1>
 
               <p className="text-base sm:text-lg text-gray-600 font-medium max-w-xl leading-relaxed">
-                Tips, guides, and fun stories from the ToyWorld family! Explore expert RC car reviews, screen-free play ideas, and parenting advice.
+                Tips, guides, and fun stories from the Provoke Playtech family! Explore expert RC car reviews, screen-free play ideas, and parenting advice.
               </p>
 
               {/* Quick Search in Hero */}
@@ -190,7 +190,7 @@ function BlogsContent() {
                 <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white">
                   <img
                     src="https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=800&q=80"
-                    alt="ToyWorld kids playing with RC Cars"
+                    alt="Provoke Playtech kids playing with RC Cars"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-3 right-3 left-3 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm text-center">
@@ -211,16 +211,14 @@ function BlogsContent() {
             <button
               type="button"
               onClick={() => handleCategoryChange('all')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                selectedCategory === 'all'
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${selectedCategory === 'all'
                   ? 'bg-[#F51F2D] text-white shadow-md shadow-[#F51F2D]/20'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
+                }`}
             >
               <span>All Posts</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
-              }`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
                 {total}
               </span>
             </button>
@@ -234,18 +232,16 @@ function BlogsContent() {
                   key={cat.id || cat.slug}
                   type="button"
                   onClick={() => handleCategoryChange(cat.slug)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                    isActive
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${isActive
                       ? 'bg-[#F51F2D] text-white shadow-md shadow-[#F51F2D]/20'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                  }`}
+                    }`}
                 >
                   <Icon size={13} className={isActive ? 'text-white' : 'text-gray-400'} />
                   <span>{cat.name}</span>
                   {cat.article_count > 0 && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
-                    }`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}>
                       {cat.article_count}
                     </span>
                   )}
@@ -306,11 +302,10 @@ function BlogsContent() {
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                   aria-label="Previous Page"
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl border border-gray-300 font-bold text-sm transition ${
-                    currentPage === 1
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl border border-gray-300 font-bold text-sm transition ${currentPage === 1
                       ? 'text-gray-300 border-gray-200 cursor-not-allowed bg-gray-50'
                       : 'text-gray-700 bg-white hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   &lt;
                 </button>
@@ -323,11 +318,10 @@ function BlogsContent() {
                       key={`page-${p}`}
                       type="button"
                       onClick={() => handlePageChange(p)}
-                      className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all ${
-                        isCurrent
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all ${isCurrent
                           ? 'bg-[#F51F2D] text-white shadow-md shadow-[#F51F2D]/20'
                           : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       {p}
                     </button>
@@ -340,11 +334,10 @@ function BlogsContent() {
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   aria-label="Next Page"
-                  className={`w-10 h-10 flex items-center justify-center rounded-xl border border-gray-300 font-bold text-sm transition ${
-                    currentPage === totalPages
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl border border-gray-300 font-bold text-sm transition ${currentPage === totalPages
                       ? 'text-gray-300 border-gray-200 cursor-not-allowed bg-gray-50'
                       : 'text-gray-700 bg-white hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   &gt;
                 </button>

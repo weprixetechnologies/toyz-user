@@ -34,7 +34,7 @@ export default function NewsletterBox({ source = 'blog_sidebar', compact = false
       if (res && res.success) {
         setStatus({
           type: 'success',
-          message: res.message || 'You are now subscribed to ToyWorld updates!'
+          message: res.message || 'You are now subscribed to Provoke Playtech updates!'
         });
         setEmail('');
       } else {

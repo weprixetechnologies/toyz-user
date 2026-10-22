@@ -277,7 +277,7 @@ export default function ProductDetailPage() {
             </p>
 
             <div className="flex items-center gap-4 text-xs text-gray-500 mb-6 border-b border-gray-100 pb-6">
-              <span>Brand: <span className="text-gray-900 font-semibold">{product.brand_name || 'ToyWorld'}</span></span>
+              <span>Brand: <span className="text-gray-900 font-semibold">{product.brand_name || 'Provoke Playtech'}</span></span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
               <span>Age: <span className="text-gray-900 font-semibold">6+ Years</span></span>
               <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
@@ -494,7 +494,7 @@ export default function ProductDetailPage() {
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 bg-[#FFF8DD] rounded-lg flex items-center justify-center text-xl">🏪</div>
                 <div>
-                  <h3 className="font-bold text-gray-900">Sold by ToyWorld</h3>
+                  <h3 className="font-bold text-gray-900">Sold by Provoke Playtech</h3>
                   <div className="flex items-center gap-1 text-[#1877F2] text-[10px] font-bold mt-1 bg-blue-50 px-1.5 py-0.5 rounded inline-flex">
                     <ShieldCheck size={12}/> Verified Seller
                   </div>

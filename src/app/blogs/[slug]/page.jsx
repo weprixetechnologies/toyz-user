@@ -69,7 +69,7 @@ export default function BlogDetailPage() {
 
   // Share handlers
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareTitle = blog?.title || 'ToyWorld Blog';
+  const shareTitle = blog?.title || 'Provoke Playtech Blog';
 
   const handleCopyLink = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -85,7 +85,7 @@ export default function BlogDetailPage() {
       navigator.share({
         title: shareTitle,
         url: currentUrl
-      }).catch(() => {});
+      }).catch(() => { });
     }
   };
 
@@ -146,11 +146,11 @@ export default function BlogDetailPage() {
     dateModified: blog.updated_at || blog.published_at || blog.created_at,
     author: {
       '@type': 'Person',
-      name: blog.author_name || 'ToyWorld Team'
+      name: blog.author_name || 'Provoke Playtech Team'
     },
     publisher: {
       '@type': 'Organization',
-      name: 'ToyWorld',
+      name: 'Provoke Playtech',
       logo: {
         '@type': 'ImageObject',
         url: 'https://provokeplaytech.com/logo.png'
@@ -242,7 +242,7 @@ export default function BlogDetailPage() {
                       <div className="w-6 h-6 rounded-full bg-red-100 text-[#F51F2D] flex items-center justify-center text-[10px] font-black">
                         {blog.author_name ? blog.author_name.charAt(0) : 'T'}
                       </div>
-                      <span>{blog.author_name || 'ToyWorld Team'}</span>
+                      <span>{blog.author_name || 'Provoke Playtech Team'}</span>
                     </span>
 
                     <span className="text-gray-300">•</span>
@@ -511,11 +511,10 @@ export default function BlogDetailPage() {
                       <Link
                         key={cat.id || cat.slug}
                         href={`/blogs?category=${cat.slug}`}
-                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition ${
-                          isSelected
+                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition ${isSelected
                             ? 'bg-red-50 text-[#F51F2D]'
                             : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <Icon size={14} className={isSelected ? 'text-[#F51F2D]' : 'text-gray-400'} />

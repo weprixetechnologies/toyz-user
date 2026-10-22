@@ -46,8 +46,8 @@ export default function ContactPage() {
             </div>
             <div>
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Us</h2>
-              <a href="mailto:support@toyworld.com" className="text-sm font-bold text-slate-900 hover:text-indigo-600 transition block mt-0.5">
-                support@toyworld.com
+              <a href="mailto:support@Provoke Playtech.com" className="text-sm font-bold text-slate-900 hover:text-indigo-600 transition block mt-0.5">
+                support@Provoke Playtech.com
               </a>
               <p className="text-[11px] text-slate-500 mt-0.5">Replies within 2 hours</p>
             </div>

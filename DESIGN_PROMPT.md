@@ -1,7 +1,7 @@
-# ToyWorld Homepage --- DESIGN.md
+# Provoke Playtech Homepage --- DESIGN.md
 
 ## 1. Design Overview
-Product: ToyWorld --- Premium Toys & RC Cars E-commerce
+Product: Provoke Playtech --- Premium Toys & RC Cars E-commerce
 Page: Homepage
 Primary audience: Parents, children, gift buyers, hobbyists, and RC-car enthusiasts
 Design direction: Bright, playful, modern, trustworthy, conversion-focused.

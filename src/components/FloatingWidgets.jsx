@@ -152,11 +152,10 @@ export default function FloatingWidgets() {
         ref={modalRef}
         aria-hidden={!activeModal}
         style={{ zIndex: 9999 }}
-        className={`fixed bottom-24 right-5 z-[9999] w-[360px] sm:w-[390px] max-w-[calc(100vw-32px)] max-h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden origin-bottom-right transition-all duration-200 ease-out ${
-          activeModal
+        className={`fixed bottom-24 right-5 z-[9999] w-[360px] sm:w-[390px] max-w-[calc(100vw-32px)] max-h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden origin-bottom-right transition-all duration-200 ease-out ${activeModal
             ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto'
             : 'scale-75 opacity-0 translate-y-8 pointer-events-none'
-        }`}
+          }`}
       >
         {/* Contact Form Modal View */}
         {activeModal === 'contact' && (
@@ -213,7 +212,7 @@ export default function FloatingWidgets() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm leading-none">
-                    {config.chatbot?.bot_name || 'ToyWorld Assistant'}
+                    {config.chatbot?.bot_name || 'Provoke Playtech Assistant'}
                   </h3>
                   <span className="text-[10px] text-white/80 mt-0.5 block">
                     {config.chatbot?.bot_subtitle || 'Online • Instant Answers'}
@@ -246,16 +245,14 @@ export default function FloatingWidgets() {
               {chatMessages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex flex-col ${
-                    msg.sender === 'user' ? 'items-end' : 'items-start'
-                  }`}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'
+                    }`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed text-xs ${
-                      msg.sender === 'user'
+                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed text-xs ${msg.sender === 'user'
                         ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
                         : 'bg-white text-slate-800 rounded-bl-none shadow-sm border border-slate-100'
-                    }`}
+                      }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
 
@@ -363,9 +360,8 @@ export default function FloatingWidgets() {
         {/* 1. Floating Contact Form Button (Lead Collection) */}
         {contactEnabled && (
           <div
-            className={`relative group pointer-events-auto transition-all duration-200 ${
-              activeModal === 'chatbot' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
-            }`}
+            className={`relative group pointer-events-auto transition-all duration-200 ${activeModal === 'chatbot' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
+              }`}
           >
             {/* Tooltip */}
             <div className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150">
@@ -379,13 +375,12 @@ export default function FloatingWidgets() {
                 '--wiggle-duration': `${shakeDuration}s`,
                 backgroundColor: config.contact_form?.button_color || '#0284c7'
               }}
-              className={`w-13 h-13 sm:w-14 sm:h-14 w-[52px] h-[52px] rounded-full text-white shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer ${
-                activeModal === 'contact'
+              className={`w-13 h-13 sm:w-14 sm:h-14 w-[52px] h-[52px] rounded-full text-white shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer ${activeModal === 'contact'
                   ? 'ring-4 ring-sky-300'
                   : !activeModal
-                  ? 'animate-widget-wiggle'
-                  : ''
-              }`}
+                    ? 'animate-widget-wiggle'
+                    : ''
+                }`}
               title="Quick Contact / Lead Form"
               aria-label="Open contact form"
             >
@@ -401,9 +396,8 @@ export default function FloatingWidgets() {
         {/* 2. Floating Chatbot Button */}
         {chatbotEnabled && (
           <div
-            className={`relative group pointer-events-auto transition-all duration-200 ${
-              activeModal === 'contact' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
-            }`}
+            className={`relative group pointer-events-auto transition-all duration-200 ${activeModal === 'contact' ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'
+              }`}
           >
             {/* Tooltip */}
             <div className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition duration-150">
@@ -416,9 +410,8 @@ export default function FloatingWidgets() {
               style={{
                 backgroundColor: config.chatbot?.button_color || '#4f46e5'
               }}
-              className={`w-13 h-13 sm:w-14 sm:h-14 w-[52px] h-[52px] rounded-full text-white shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer relative ${
-                activeModal === 'chatbot' ? 'ring-4 ring-indigo-300' : ''
-              }`}
+              className={`w-13 h-13 sm:w-14 sm:h-14 w-[52px] h-[52px] rounded-full text-white shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer relative ${activeModal === 'chatbot' ? 'ring-4 ring-indigo-300' : ''
+                }`}
               title="Chatbot"
               aria-label="Open chatbot"
             >
