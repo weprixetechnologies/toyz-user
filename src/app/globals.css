@@ -57,3 +57,81 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .animate-widget-wiggle:hover {
   animation-play-state: paused;
 }
+
+/* ── Reseller Heavy Discount Store Animations ──────────────────────── */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-scroll {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes float-badge-1 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-22px) rotate(8deg) scale(1.06);
+  }
+}
+
+@keyframes float-badge-2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-32px) rotate(-10deg) scale(0.95);
+  }
+}
+
+@keyframes float-badge-3 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-16px) rotate(6deg) scale(1.08);
+  }
+}
+
+@keyframes float-badge-4 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-26px) rotate(-6deg) scale(1.04);
+  }
+}
+
+.animate-float-1 {
+  animation: float-badge-1 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-2 {
+  animation: float-badge-2 8.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-3 {
+  animation: float-badge-3 7.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-4 {
+  animation: float-badge-4 9s ease-in-out infinite;
+  will-change: transform;
+}
+

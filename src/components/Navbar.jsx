@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { ShoppingCart, Heart, User, Search, Menu, X, Gift, Truck, Star, Phone, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X, Gift, Truck, Star, Phone, ArrowRight, ArrowLeft, Flame, Sparkles, Zap, Tag } from 'lucide-react';
 import { api } from '../lib/api';
 import Image from 'next/image';
 
@@ -128,6 +128,99 @@ export default function Navbar() {
 
   const desktopWidth = Math.max(200, Number(headerData.logo_width) || 200);
   const mobileWidth = Number(headerData.logo_width_mobile) || Math.min(160, Math.round(desktopWidth * 0.75));
+
+  const isResellerPage = pathname === '/reseller' || pathname?.startsWith('/reseller');
+
+  if (isResellerPage) {
+    return (
+      <header className="sticky top-0 z-50 w-full font-sans shadow-2xl">
+        {/* Top Dark Bar */}
+        <div className="bg-[#080B12]/95 backdrop-blur-md border-b border-amber-500/30 px-3 sm:px-6 lg:px-8 py-3 transition-all">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            
+            {/* Back button with back arrow and RETURN TO NORMAL */}
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-red-950/70 border border-red-400/40 hover:scale-105 active:scale-95 transition-all duration-300 group flex-shrink-0"
+              title="Return to Normal Store"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span>RETURN TO NORMAL</span>
+            </Link>
+
+            {/* Center: Premium Heavy Discount Emblem */}
+            <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-yellow-500/25 to-amber-500/15 border border-amber-400/40 shadow-inner">
+              <Flame size={18} className="text-amber-400 animate-pulse" />
+              <span className="text-xs lg:text-sm font-black tracking-widest text-amber-300 uppercase">
+                VIP HEAVY DISCOUNT STORE
+              </span>
+              <Sparkles size={16} className="text-yellow-300" />
+            </div>
+
+            {/* Right: Cart & Wishlist */}
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+              <Link
+                href="/account/wishlist"
+                className="hidden sm:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-900 border border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-400 transition"
+                title="Wishlist"
+              >
+                <Heart size={18} />
+              </Link>
+
+              <Link
+                href="/cart"
+                className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm shadow-md hover:shadow-amber-500/30 transition-all hover:scale-105"
+              >
+                <ShoppingCart size={18} />
+                <span className="hidden sm:inline">CART</span>
+                {itemCount > 0 && (
+                  <span className="bg-slate-950 text-amber-300 text-[11px] font-black min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Big Marquee Bar */}
+        <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 border-b-2 border-amber-500 shadow-md overflow-hidden select-none py-2.5 sm:py-3.5">
+          <div className="animate-marquee-scroll whitespace-nowrap flex items-center gap-8 text-sm sm:text-lg md:text-xl lg:text-2xl font-black tracking-widest uppercase">
+            {/* Repeated tracks for seamless continuous infinite marquee scroll */}
+            <span className="flex items-center gap-6">
+              <span>⚡ HEAVY DISCOUNT WHOLESALE STORE ⚡</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🔥 SPECIAL RESELLER DISCOUNT UNLOCKED 🔥</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>💎 EXCLUSIVE B2B PRICING ACTIVE 💎</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🚀 BUY MORE SAVE MORE 🚀</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🏷️ DIRECT FACTORY PRICES ON ALL ITEMS 🏷️</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>👑 MAXIMUM PROFIT MARGINS GUARANTEED 👑</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+            </span>
+            <span className="flex items-center gap-6">
+              <span>⚡ HEAVY DISCOUNT WHOLESALE STORE ⚡</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🔥 SPECIAL RESELLER DISCOUNT UNLOCKED 🔥</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>💎 EXCLUSIVE B2B PRICING ACTIVE 💎</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🚀 BUY MORE SAVE MORE 🚀</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>🏷️ DIRECT FACTORY PRICES ON ALL ITEMS 🏷️</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+              <span>👑 MAXIMUM PROFIT MARGINS GUARANTEED 👑</span>
+              <span className="text-red-700 font-extrabold text-xl">●</span>
+            </span>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white font-sans border-b border-gray-100 shadow-sm">

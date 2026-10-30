@@ -8,8 +8,9 @@ import { useWishlist } from '../context/WishlistContext';
 import { ShoppingCart, CheckCircle, Heart, Star } from 'lucide-react';
 import { useState, memo } from 'react';
 
-function ProductCard({ product, priority = false }) {
-  const { isReseller } = useAuth();
+function ProductCard({ product, priority = false, forceReseller = false }) {
+  const { isReseller: authReseller } = useAuth();
+  const isReseller = forceReseller || authReseller;
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [added, setAdded] = useState(false);
@@ -26,7 +27,7 @@ function ProductCard({ product, priority = false }) {
   // • Reseller view  → cross customer price (salePrice or basePrice)
   // • Customer view  → cross basePrice only when salePrice is lower
   const crossPrice    = resellerPrice !== null
-    ? (salePrice ?? basePrice)
+    ? (Math.max(salePrice || 0, basePrice) > displayPrice ? Math.max(salePrice || 0, basePrice) : (salePrice ?? basePrice))
     : basePrice;
 
   // Discount % against the cross-price
