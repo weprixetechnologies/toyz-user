@@ -154,6 +154,26 @@ function CheckoutContent() {
     const res = await api.post('/orders', payload);
     if (res.success && res.data) {
       const orderId = res.data.order?.id || res.data.id;
+
+      // Online Gateway Flow (PhonePe, etc.)
+      if (selectedMethod !== 'cod') {
+        const initRes = await api.post('/payments/initiate', {
+          order_id: orderId,
+          gateway_key: selectedMethod
+        });
+
+        if (initRes.success && (initRes.data?.redirect_url || initRes.data?.checkout_url)) {
+          await clearCart();
+          const targetUrl = initRes.data.redirect_url || initRes.data.checkout_url;
+          window.location.href = targetUrl;
+          return;
+        } else {
+          setErrorMessage(initRes.message || 'Payment initiation failed. You may retry payment.');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       await clearCart();
       router.push(`/checkout/success?orderId=${orderId}`);
     } else {

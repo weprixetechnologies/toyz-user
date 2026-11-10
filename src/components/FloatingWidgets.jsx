@@ -153,8 +153,8 @@ export default function FloatingWidgets() {
         aria-hidden={!activeModal}
         style={{ zIndex: 9999 }}
         className={`fixed bottom-24 right-5 z-[9999] w-[360px] sm:w-[390px] max-w-[calc(100vw-32px)] max-h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden origin-bottom-right transition-all duration-200 ease-out ${activeModal
-            ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto'
-            : 'scale-75 opacity-0 translate-y-8 pointer-events-none'
+          ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto'
+          : 'scale-75 opacity-0 translate-y-8 pointer-events-none'
           }`}
       >
         {/* Contact Form Modal View */}
@@ -250,8 +250,8 @@ export default function FloatingWidgets() {
                 >
                   <div
                     className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed text-xs ${msg.sender === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
-                        : 'bg-white text-slate-800 rounded-bl-none shadow-sm border border-slate-100'
+                      ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
+                      : 'bg-white text-slate-800 rounded-bl-none shadow-sm border border-slate-100'
                       }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -376,10 +376,10 @@ export default function FloatingWidgets() {
                 backgroundColor: config.contact_form?.button_color || '#0284c7'
               }}
               className={`w-13 h-13 sm:w-14 sm:h-14 w-[52px] h-[52px] rounded-full text-white shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer ${activeModal === 'contact'
-                  ? 'ring-4 ring-sky-300'
-                  : !activeModal
-                    ? 'animate-widget-wiggle'
-                    : ''
+                ? 'ring-4 ring-sky-300'
+                : !activeModal
+                  ? 'animate-widget-wiggle'
+                  : ''
                 }`}
               title="Quick Contact / Lead Form"
               aria-label="Open contact form"
