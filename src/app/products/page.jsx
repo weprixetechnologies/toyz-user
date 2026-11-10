@@ -209,6 +209,9 @@ function ProductsContent() {
     loadMetadata();
     // Trigger initial product fetch in parallel without waiting for metadata waterfall
     fetchProducts();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   }, []); // Run on mount
 
   // Watch filter/search/sort changes and re-fetch with 300ms debounce

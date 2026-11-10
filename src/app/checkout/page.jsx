@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus } from 'lucide-react';
+import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus, Lock, CheckCircle2 } from 'lucide-react';
 import AvailableOffers from '../../components/AvailableOffers';
 
 
@@ -168,7 +168,7 @@ function CheckoutContent() {
           window.location.href = targetUrl;
           return;
         } else {
-          setErrorMessage(initRes.message || 'Payment initiation failed. You may retry payment.');
+          setErrorMessage(initRes.message || 'Payment initiation failed. Your cart has been preserved. You may retry or select another payment option.');
           setSubmitting(false);
           return;
         }
@@ -354,39 +354,7 @@ function CheckoutContent() {
             )}
           </div>
 
-          {/* Section 2: Shipping Presets */}
-          {shippingOptions.length > 0 && (
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
-              <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                <Truck className="text-sky-600" size={20} /> Shipping Method
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {shippingOptions.map((opt) => (
-                  <label
-                    key={opt.id}
-                    className={`p-3.5 rounded-xl border cursor-pointer block transition ${
-                      selectedShipping?.id === opt.id ? 'border-sky-600 bg-sky-50/50' : 'border-gray-200'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="shipping"
-                      checked={selectedShipping?.id === opt.id}
-                      onChange={() => setSelectedShipping(opt)}
-                      className="sr-only"
-                    />
-                    <div className="flex justify-between font-bold text-sm text-gray-900">
-                      <span>{opt.name}</span>
-                      <span>₹{parseFloat(opt.cost).toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">Estimated delivery: {opt.estimated_days || '3-5'} business days</div>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: Payment Method */}
+          {/* Section 2: Payment Method */}
           <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
               <CreditCard className="text-sky-600" size={20} /> Payment Option
@@ -498,6 +466,55 @@ function CheckoutContent() {
           </p>
         </div>
       </form>
+
+      {/* Secure Checkout Processing Modal */}
+      {submitting && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-20 h-20 mx-auto mb-5 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-4 border-sky-500/20 border-t-sky-600 animate-spin" />
+              <div className="w-14 h-14 bg-sky-50 rounded-full flex items-center justify-center text-sky-600 shadow-inner">
+                <Lock size={28} className="animate-pulse" />
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase bg-sky-50 text-sky-700 mb-3">
+              <span className="w-2 h-2 rounded-full bg-sky-500 animate-ping" />
+              Secure Checkout
+            </span>
+
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
+              Processing Your Order...
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xs mx-auto mb-6">
+              Please wait while we encrypt and secure your transaction. Do not refresh or press back.
+            </p>
+
+            <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-2.5 border border-slate-100">
+              <div className="flex items-center gap-2.5 text-xs text-slate-700 font-semibold">
+                <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-black">✓</div>
+                <span>Reserving items & verifying inventory</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-slate-700 font-semibold">
+                <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-black">✓</div>
+                <span>Securing 256-bit SSL encrypted channel</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-sky-700 font-bold">
+                <div className="w-4 h-4 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-ping" />
+                </div>
+                <span>Connecting to payment gateway...</span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
+              <ShieldCheck size={14} className="text-emerald-500" />
+              <span>100% Safe & Encrypted Payment</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

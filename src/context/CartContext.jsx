@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -36,6 +37,9 @@ export function CartProvider({ children }) {
         localStorage.setItem('guest_token', res.data.guest_token);
       }
       await fetchCart();
+      toast.success('Item added to cart!');
+    } else {
+      toast.error(res.message || 'Cannot add item to cart');
     }
     setLoading(false);
     return res;
@@ -47,6 +51,8 @@ export function CartProvider({ children }) {
     const res = await api.put(`/cart/items/${itemId}`, { qty: qtyVal, quantity: qtyVal });
     if (res.success) {
       await fetchCart();
+    } else {
+      toast.error(res.message || 'Cannot update quantity');
     }
     setLoading(false);
     return res;

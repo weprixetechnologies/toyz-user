@@ -20,6 +20,7 @@ import { WishlistProvider } from '../context/WishlistContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FloatingWidgets from '../components/FloatingWidgets';
+import ScrollReset from '../components/ScrollReset';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
@@ -53,6 +54,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={`flex flex-col min-h-screen ${montserrat.variable} ${ledger.variable} font-sans`}>
+        <ScrollReset />
         <AuthProvider>
           <Toaster position="top-center" />
           <CartProvider>

@@ -51,6 +51,20 @@ export default function ProductDetailPage() {
   const [offers, setOffers] = useState([]);
   const [copiedCode, setCopiedCode] = useState(null);
 
+  // Always reset scroll to top on page mount or slug change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [slug]);
+
+  // When loading finishes and full page DOM renders, ensure page stays at top
+  useEffect(() => {
+    if (!loading && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [loading]);
+
   useEffect(() => {
     async function loadProduct() {
       setLoading(true);
@@ -230,7 +244,14 @@ export default function ProductDetailPage() {
   const discount = originalPrice > currentPrice ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
   const saveAmount = originalPrice - currentPrice;
 
+  const availableStock = selectedVariant
+    ? (selectedVariant.stock_qty !== undefined && selectedVariant.stock_qty !== null ? Number(selectedVariant.stock_qty) : 0)
+    : (product && product.stock_qty !== undefined && product.stock_qty !== null ? Number(product.stock_qty) : 0);
+
+  const isOutOfStock = availableStock <= 0;
+
   const handleBuyNow = () => {
+    if (isOutOfStock) return;
     if (quantity < moq) return alert(`Minimum Order Quantity is ${moq}`);
     if (!user) {
       setShowLoginModal(true);
@@ -241,15 +262,17 @@ export default function ProductDetailPage() {
   };
 
   const handleLoginSuccess = () => {
+    if (isOutOfStock) return;
     setShowLoginModal(false);
     const variantId = selectedVariant ? selectedVariant.id : "";
     router.push(`/checkout?buyNow=true&productId=${product.id}&variantId=${variantId}&qty=${quantity}`);
   };
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) return;
     if (quantity < moq) return alert(`Minimum Order Quantity is ${moq}`);
     const res = await addToCart(product.id, quantity, selectedVariant?.id);
-    if (res.success) {
+    if (res?.success) {
       setAdded(true);
       setTimeout(() => setAdded(false), 2500);
     }
@@ -452,17 +475,36 @@ export default function ProductDetailPage() {
             <div className="mb-8">
               <h4 className="text-xs font-bold text-gray-900 mb-2">Quantity:</h4>
               <div className="flex items-center gap-4">
-                <div className="flex items-center border border-gray-300 rounded-lg h-10 w-28 font-bold">
-                  <button onClick={() => setQuantity(Math.max(moq, quantity - 1))} className="flex-1 text-gray-500 hover:text-[#F51F2D]">-</button>
-                  <div className="w-10 text-center border-x border-gray-200 text-sm">{quantity}</div>
-                  <button onClick={() => setQuantity(quantity + 1)} className="flex-1 text-[#1877F2] hover:text-[#0b5cce]">+</button>
+                <div className={`flex items-center border rounded-lg h-10 w-28 font-bold ${isOutOfStock ? 'border-gray-200 bg-gray-50 opacity-60' : 'border-gray-300'}`}>
+                  <button
+                    disabled={isOutOfStock}
+                    onClick={() => setQuantity(Math.max(moq, quantity - 1))}
+                    className="flex-1 text-gray-500 hover:text-[#F51F2D] disabled:cursor-not-allowed"
+                  >
+                    -
+                  </button>
+                  <div className="w-10 text-center border-x border-gray-200 text-sm">{isOutOfStock ? 0 : quantity}</div>
+                  <button
+                    disabled={isOutOfStock || quantity >= availableStock}
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="flex-1 text-[#1877F2] hover:text-[#0b5cce] disabled:text-gray-300 disabled:cursor-not-allowed"
+                  >
+                    +
+                  </button>
                 </div>
-                <div className="text-sm font-bold text-[#18A957]">
-                  In Stock{' '}
-                  <span className="font-normal text-gray-500">
-                    ({selectedVariant ? (selectedVariant.stock_qty ?? '—') : (product.stock_qty || '50+')} available)
-                  </span>
-                </div>
+                {isOutOfStock ? (
+                  <div className="text-sm font-bold text-red-600 flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                    Out of Stock
+                  </div>
+                ) : (
+                  <div className="text-sm font-bold text-[#18A957]">
+                    In Stock{' '}
+                    <span className="font-normal text-gray-500">
+                      ({availableStock} available)
+                    </span>
+                  </div>
+                )}
               </div>
               {selectedVariant && (
                 <p className="text-[11px] text-gray-400 mt-1">SKU: <span className="font-mono">{selectedVariant.sku || product.sku}</span></p>
@@ -471,16 +513,30 @@ export default function ProductDetailPage() {
 
             {/* Buttons */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <button
-                onClick={handleAddToCart}
-                className={`h-12 rounded-lg border-2 flex items-center justify-center gap-2 font-black transition ${added ? 'bg-[#18A957] border-[#18A957] text-white shadow-md' : 'border-[#F51F2D] text-[#F51F2D] hover:bg-[#FFF0F1]'}`}
-              >
-                {added ? <CheckCircle size={18} /> : <ShoppingCart size={18} />}
-                {added ? 'Added' : 'Add to Cart'}
-              </button>
-              <button onClick={handleBuyNow} className="h-12 bg-[#F51F2D] hover:bg-[#D41825] text-white rounded-lg flex items-center justify-center gap-2 font-black shadow-md hover:shadow-lg transition">
-                <Zap size={18} className="fill-current" /> Buy Now
-              </button>
+              {isOutOfStock ? (
+                <div className="col-span-2">
+                  <button
+                    disabled
+                    className="w-full h-12 rounded-lg bg-gray-100 border border-gray-300 text-gray-400 font-bold flex items-center justify-center gap-2 cursor-not-allowed"
+                  >
+                    <ShoppingCart size={18} /> Currently Out of Stock
+                  </button>
+                  <p className="text-xs text-red-500 mt-1.5 text-center font-medium">This item is currently out of stock.</p>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={handleAddToCart}
+                    className={`h-12 rounded-lg border-2 flex items-center justify-center gap-2 font-black transition ${added ? 'bg-[#18A957] border-[#18A957] text-white shadow-md' : 'border-[#F51F2D] text-[#F51F2D] hover:bg-[#FFF0F1]'}`}
+                  >
+                    {added ? <CheckCircle size={18} /> : <ShoppingCart size={18} />}
+                    {added ? 'Added' : 'Add to Cart'}
+                  </button>
+                  <button onClick={handleBuyNow} className="h-12 bg-[#F51F2D] hover:bg-[#D41825] text-white rounded-lg flex items-center justify-center gap-2 font-black shadow-md hover:shadow-lg transition">
+                    <Zap size={18} className="fill-current" /> Buy Now
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Offers */}

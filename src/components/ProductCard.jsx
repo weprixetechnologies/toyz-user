@@ -37,9 +37,16 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
 
   const moq = isReseller && product.moq ? product.moq : 1;
 
+  const isOutOfStock = product.product_type !== 'variable' && (
+    (product.stock_qty !== undefined && product.stock_qty !== null && Number(product.stock_qty) <= 0) ||
+    product.in_stock === false ||
+    product.stock_status === 'out_of_stock'
+  );
+
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
     const res = await addToCart(product.id, moq);
     if (res?.success) {
       setAdded(true);
@@ -51,7 +58,13 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
     <div className="bg-white rounded-[16px] border border-[#E7EBEF] overflow-hidden hover:shadow-xl hover:border-[#F51F2D]/30 transition-all duration-300 group flex flex-col justify-between relative font-sans h-full w-full">
 
       {/* ── Top-left custom badge stack ──────────────────────────────────────── */}
-      {product.badges && product.badges.length > 0 && (
+      {isOutOfStock ? (
+        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1 pointer-events-none">
+          <span className="text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm uppercase tracking-wide bg-gray-800 text-white">
+            Out of Stock
+          </span>
+        </div>
+      ) : product.badges && product.badges.length > 0 && (
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1 pointer-events-none">
           {product.badges.map(b => (
             <span
@@ -173,6 +186,14 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               >
                 <ShoppingCart size={16} />
               </Link>
+            ) : isOutOfStock ? (
+              <button
+                disabled
+                title="Out of stock"
+                className="flex-shrink-0 px-2.5 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-80"
+              >
+                Out of Stock
+              </button>
             ) : (
               <button
                 onClick={handleAddToCart}
