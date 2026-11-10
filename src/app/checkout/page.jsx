@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus, Lock, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus, Lock, CheckCircle2, Banknote, Zap, Wallet } from 'lucide-react';
 import AvailableOffers from '../../components/AvailableOffers';
 
 
@@ -355,33 +355,161 @@ function CheckoutContent() {
           </div>
 
           {/* Section 2: Payment Method */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
-            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-              <CreditCard className="text-sky-600" size={20} /> Payment Option
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-white p-6 sm:p-7 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+              <div>
+                <h3 className="font-black text-gray-900 text-lg flex items-center gap-2">
+                  <CreditCard className="text-sky-600" size={20} /> Select Payment Option
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">All transactions are encrypted and 100% secure</p>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full w-fit">
+                <ShieldCheck size={14} className="text-emerald-600" />
+                <span>256-bit Bank Grade Security</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
               {paymentMethods.map((m) => {
                 const key = m.key_name || m.code || 'cod';
+                const isSelected = selectedMethod === key;
+                const isPhonePe = key.toLowerCase().includes('phonepe');
+                const isCod = key.toLowerCase() === 'cod';
+                const isRazorpay = key.toLowerCase().includes('razorpay');
+
                 return (
                   <label
                     key={key}
-                    className={`p-4 rounded-xl border cursor-pointer block transition ${
-                      selectedMethod === key ? 'border-sky-600 bg-sky-50/50' : 'border-gray-200'
+                    onClick={() => setSelectedMethod(key)}
+                    className={`relative flex flex-col p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? 'border-indigo-600 bg-indigo-50/30 shadow-md ring-2 ring-indigo-500/10'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-white'
                     }`}
                   >
                     <input
                       type="radio"
                       name="payment"
                       value={key}
-                      checked={selectedMethod === key}
+                      checked={isSelected}
                       onChange={(e) => setSelectedMethod(e.target.value)}
                       className="sr-only"
                     />
-                    <div className="font-bold text-sm text-gray-900">{m.display_name || key.toUpperCase()}</div>
-                    <div className="text-xs text-gray-500 mt-1">{key === 'cod' ? 'Pay upon delivery' : 'Secure Online Gateway'}</div>
+
+                    {/* Top Row: Radio, Title, Badges */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3.5">
+                        {/* Custom Radio Button */}
+                        <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'
+                        }`}>
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                        </div>
+
+                        {/* Title & Description */}
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-gray-900 text-sm sm:text-base">
+                              {isPhonePe
+                                ? 'PhonePe (UPI, Cards, NetBanking, Wallets)'
+                                : isCod
+                                ? 'Cash on Delivery (COD)'
+                                : isRazorpay
+                                ? 'Cards, NetBanking, UPI (Razorpay)'
+                                : (m.display_name || key.toUpperCase())}
+                            </span>
+                            {isPhonePe && (
+                              <span className="bg-purple-100 text-[#5f259f] font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                Recommended
+                              </span>
+                            )}
+                            {isCod && (
+                              <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                Pay at Doorstep
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                            {isPhonePe
+                              ? 'Pay securely with PhonePe, Google Pay, Paytm, BHIM UPI, Debit/Credit Card or Net Banking.'
+                              : isCod
+                              ? 'Pay via cash or UPI to delivery agent when your order arrives.'
+                              : 'Instant checkout via all major debit/credit cards, UPI and Net Banking.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right Visual Icon */}
+                      <div className="shrink-0 items-center gap-1.5 hidden sm:flex">
+                        {isPhonePe && (
+                          <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#5f259f] flex items-center justify-center font-black text-base border border-purple-100 shadow-sm">
+                            <Zap size={20} className="fill-purple-600 text-purple-600" />
+                          </div>
+                        )}
+                        {isCod && (
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-base border border-emerald-100 shadow-sm">
+                            <Banknote size={22} className="text-emerald-600" />
+                          </div>
+                        )}
+                        {!isPhonePe && !isCod && (
+                          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black text-base border border-sky-100 shadow-sm">
+                            <CreditCard size={20} className="text-sky-600" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Active Expanded Badges */}
+                    {isSelected && isPhonePe && (
+                      <div className="mt-3.5 pt-3 border-t border-indigo-100/70 flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Supported:</span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                          GPay
+                        </span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-purple-700 text-[10px] font-black rounded-lg shadow-xs">
+                          PhonePe
+                        </span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-sky-600 text-[10px] font-black rounded-lg shadow-xs">
+                          Paytm
+                        </span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                          BHIM UPI
+                        </span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                          Debit & Credit Cards
+                        </span>
+                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                          Net Banking
+                        </span>
+                      </div>
+                    )}
+
+                    {isSelected && isCod && (
+                      <div className="mt-3.5 pt-3 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-800 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                        <span>No advance payment needed. You can pay cash or scan delivery agent's UPI QR upon delivery.</span>
+                      </div>
+                    )}
                   </label>
                 );
               })}
+            </div>
+
+            {/* Reassuring Security Footer */}
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <Lock size={14} className="text-slate-400" />
+                <span>End-to-end encrypted checkout</span>
+              </div>
+              <div className="flex items-center gap-3 text-[11px]">
+                <span className="flex items-center gap-1 font-semibold text-slate-700">
+                  <CheckCircle2 size={13} className="text-emerald-500" /> Instant Confirmation
+                </span>
+                <span className="flex items-center gap-1 font-semibold text-slate-700">
+                  <CheckCircle2 size={13} className="text-emerald-500" /> RBI Compliant
+                </span>
+              </div>
             </div>
           </div>
         </div>
