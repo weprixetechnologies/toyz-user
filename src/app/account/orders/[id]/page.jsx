@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { api } from '../../../../lib/api';
+import { api, downloadFile } from '../../../../lib/api';
 import StatusBadge from '../../../../components/StatusBadge';
 import { Package, Download, Truck, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -10,6 +10,7 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     async function loadDetail() {
@@ -34,7 +35,14 @@ export default function OrderDetailPage() {
   const { order, items = [], shipments = [], rejected_items = [] } = orderData;
 
   const handleDownloadInvoice = async () => {
-    window.open(`https://backend.provokeplaytech.com/api/v1/orders/${order.id}/invoice`, '_blank');
+    try {
+      setDownloading(true);
+      await downloadFile(`/orders/${order.id}/invoice`, `Invoice-${order.order_number || order.id}.pdf`);
+    } catch (err) {
+      alert(err.message || 'Failed to download invoice. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -53,9 +61,10 @@ export default function OrderDetailPage() {
 
         <button
           onClick={handleDownloadInvoice}
-          className="bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-sky-600 transition flex items-center gap-2 w-fit"
+          disabled={downloading}
+          className="bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-sky-600 transition flex items-center gap-2 w-fit disabled:opacity-50"
         >
-          <Download size={16} /> Download Tax Invoice
+          <Download size={16} /> {downloading ? 'Downloading...' : 'Download Tax Invoice (PDF)'}
         </button>
       </div>
 
