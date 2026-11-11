@@ -73,29 +73,29 @@ function CheckoutContent() {
            setBuyNowItem(item);
         }
       }
-      const [addrRes, payRes, shipRes] = await Promise.all([
+      const [addrRes, payRes] = await Promise.all([
         api.get('/users/addresses'),
-        api.get('/payments/methods'),
-        api.get('/cart/shipping-options')
+        api.get('/payments/methods')
       ]);
 
       if (addrRes.success) {
         const list = addrRes.data?.addresses || addrRes.data || [];
         setAddresses(list);
-        if (list.length > 0) setSelectedAddressId(list[0].id.toString());
-        else setShowNewAddress(true);
+        if (list.length > 0) {
+          setSelectedAddressId((prev) =>
+            prev && list.some((a) => a.id?.toString() === prev) ? prev : list[0].id.toString()
+          );
+          setShowNewAddress(false);
+        } else {
+          setSelectedAddressId('');
+          setShowNewAddress(true);
+        }
       }
 
       if (payRes.success) {
         const methods = payRes.data?.methods || payRes.data || [];
         setPaymentMethods(methods);
         if (methods.length > 0) setSelectedMethod(methods[0].key_name || methods[0].code || 'cod');
-      }
-
-      if (shipRes.success) {
-        const opts = shipRes.data?.options || shipRes.data || [];
-        setShippingOptions(opts);
-        if (opts.length > 0) setSelectedShipping(opts[0]);
       }
 
       setLoading(false);
@@ -107,7 +107,7 @@ function CheckoutContent() {
       setSelectedOfferIds([]);
     }
     loadCheckoutData();
-  }, []);
+  }, [user?.id, isBuyNow]);
 
   const handleCreateAddress = async (e) => {
     e.preventDefault();
@@ -202,20 +202,32 @@ function CheckoutContent() {
     evaluate();
   }, [rawSubtotal, appliedCoupon, selectedOfferIds, isReseller]);
 
+  const finalSubtotal = evaluation ? evaluation.final_subtotal : rawSubtotal;
+  const selectedAddress = addresses.find(item => item.id?.toString() === selectedAddressId);
+  const draftPinCode = showNewAddress ? String(newAddr.pin_code || '').trim() : '';
+  const savedPinCode = selectedAddress?.pin_code ? String(selectedAddress.pin_code).trim() : '';
+  const activePinCode = /^\d{6}$/.test(draftPinCode) ? draftPinCode : savedPinCode;
+
   useEffect(() => {
-    const address = addresses.find(item => item.id?.toString() === selectedAddressId);
-    if (!address?.pin_code || rawSubtotal <= 0) return;
-    api.get('/cart/shipping-options', {
-      pin_code: address.pin_code,
-      subtotal: rawSubtotal
-    }).then((res) => {
+    const controller = new AbortController();
+    const params = {
+      subtotal: finalSubtotal || 0
+    };
+    if (activePinCode) {
+      params.pin_code = activePinCode;
+    }
+
+    api.get('/cart/shipping-options', params, { signal: controller.signal }).then((res) => {
+      if (controller.signal.aborted) return;
       if (res.success) {
         const options = res.data?.options || res.data || [];
         setShippingOptions(options);
         setSelectedShipping(options[0] || null);
       }
-    });
-  }, [addresses, selectedAddressId, rawSubtotal]);
+    }).catch(() => {});
+
+    return () => controller.abort();
+  }, [activePinCode, finalSubtotal, isReseller]);
 
   const toggleOffer = (id) => {
     if (isReseller) return;
@@ -226,9 +238,10 @@ function CheckoutContent() {
     });
   };
 
-  const finalSubtotal = evaluation ? evaluation.final_subtotal : rawSubtotal;
   const shippingCost = selectedShipping ? parseFloat(selectedShipping.cost || 0) : 0;
-  const shippingText = selectedShipping ? `₹${shippingCost.toLocaleString('en-IN')}` : 'Enter address to calculate';
+  const shippingText = selectedShipping
+    ? (shippingCost > 0 ? `₹${shippingCost.toLocaleString('en-IN')}` : '₹0 (Free)')
+    : (activePinCode ? 'Calculating...' : 'Enter address to calculate');
   const grandTotal = finalSubtotal + shippingCost;
 
   if (loading) {
@@ -572,8 +585,15 @@ function CheckoutContent() {
               </div>
             )}
             <div className="flex justify-between text-gray-600">
-              <span>Shipping Fee</span>
-              <span className={isReseller ? "text-orange-500 font-bold text-[10px] uppercase" : ""}>{shippingText}</span>
+              <span>
+                Shipping Fee
+                {selectedShipping?.source === 'pincode' && selectedShipping?.label && (
+                  <span className="ml-1.5 text-[11px] font-medium text-emerald-700">
+                    (Pincode {selectedShipping.label})
+                  </span>
+                )}
+              </span>
+              <span className={isReseller && shippingCost === 0 ? "text-orange-500 font-bold text-[10px] uppercase" : ""}>{shippingText}</span>
             </div>
             <div className="flex justify-between font-bold text-gray-900 text-lg pt-3 border-t border-gray-100">
               <span>Total Payable</span>
