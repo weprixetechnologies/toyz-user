@@ -1,12 +1,15 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ShieldCheck, FileText, ArrowRight, Clock,
-  Calendar, Lock, RotateCcw, Truck, Cookie, Layers
+  ShieldCheck, FileText, ArrowRight,
+  Lock, RotateCcw, Truck, Cookie
 } from 'lucide-react';
-import api from '../../lib/api';
+
+export const revalidate = 86400;
+
+export const metadata = {
+  title: 'Trust & Legal Center | Provoke Playtech',
+  description: 'Read the official customer policies, privacy commitments, refund terms, and shipping guidelines at Provoke Playtech.'
+};
 
 const ICONS = {
   privacy: Lock,
@@ -17,25 +20,27 @@ const ICONS = {
   custom: FileText
 };
 
-export default function PoliciesDirectoryPage() {
-  const [policies, setPolicies] = useState([]);
-  const [loading, setLoading] = useState(true);
+const API_BASE = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:46711/api/v1';
 
-  useEffect(() => {
-    async function fetchList() {
-      try {
-        const res = await api.get('/policies');
-        if (res.success && Array.isArray(res.data)) {
-          setPolicies(res.data);
-        }
-      } catch (err) {
-        console.error('Error fetching policies:', err);
-      } finally {
-        setLoading(false);
+async function getPolicies() {
+  try {
+    const res = await fetch(`${API_BASE}/policies`, {
+      next: {
+        revalidate: 86400,
+        tags: ['policies']
       }
-    }
-    fetchList();
-  }, []);
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json?.data || [];
+  } catch (err) {
+    console.error('[Policies Hub Static Fetch Error]:', err.message);
+    return [];
+  }
+}
+
+export default async function PoliciesDirectoryPage() {
+  const policies = await getPolicies();
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -56,12 +61,7 @@ export default function PoliciesDirectoryPage() {
 
       {/* Directory Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {loading ? (
-          <div className="min-h-[40vh] flex flex-col items-center justify-center">
-            <div className="w-8 h-8 border-4 border-[#F51F2D] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-slate-500 mt-3">Loading store policies...</p>
-          </div>
-        ) : policies.length === 0 ? (
+        {policies.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
             <p className="text-sm text-slate-500">No legal policies currently published.</p>
           </div>
