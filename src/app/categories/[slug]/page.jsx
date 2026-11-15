@@ -155,7 +155,8 @@ export default function CategoryProductsPage() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Category Header Banner */}
         {category?.banner_image ? (
-          <div className="w-full rounded-[20px] overflow-hidden shadow-sm mb-8 border border-[#E7EBEF]">
+          <div className="w-full rounded-[20px] overflow-hidden shadow-sm mb-8 border border-[#E7EBEF] relative">
+            <h1 className="sr-only">{category?.name}</h1>
             <Image width={1920} height={400} 
               src={category.banner_image} 
               alt={category.name} 

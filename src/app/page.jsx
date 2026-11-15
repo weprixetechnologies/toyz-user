@@ -67,7 +67,7 @@ export default async function HomePage() {
                     width={240}
                     height={240}
                     src={cat.image}
-                    alt={cat.name}
+                    alt=""
                     loading="lazy"
                     sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 25vw, 190px"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -109,6 +109,9 @@ export default async function HomePage() {
                     }
                   }
                   const isExternal = linkHref.startsWith('http://') || linkHref.startsWith('https://');
+                  const pct = Number(col.width_percentage) || Math.round(100 / (section.config_data.length || 1));
+                  const colWidthDesktop = Math.round(1440 * (pct / 100));
+                  const blockSizes = `(max-width: 768px) 100vw, (max-width: 1024px) ${pct}vw, ${colWidthDesktop}px`;
 
                   return (
                     <div key={idx}
@@ -119,10 +122,10 @@ export default async function HomePage() {
                           <a href={linkHref} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                             {col.image_url && (
                               <Image
-                                width={1200}
-                                height={600}
+                                width={800}
+                                height={400}
                                 src={col.image_url}
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                                sizes={blockSizes}
                                 loading="lazy"
                                 className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
                                 alt={col.title || `Promotional block ${idx + 1}`}
@@ -133,10 +136,10 @@ export default async function HomePage() {
                           <Link href={linkHref} prefetch={false} className="block w-full h-full">
                             {col.image_url && (
                               <Image
-                                width={1200}
-                                height={600}
+                                width={800}
+                                height={400}
                                 src={col.image_url}
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                                sizes={blockSizes}
                                 loading="lazy"
                                 className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
                                 alt={col.title || `Promotional block ${idx + 1}`}
@@ -148,10 +151,10 @@ export default async function HomePage() {
                         <div className="w-full h-full">
                           {col.image_url && (
                             <Image
-                              width={1200}
-                              height={600}
+                              width={800}
+                              height={400}
                               src={col.image_url}
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                              sizes={blockSizes}
                               loading="lazy"
                               className="w-full h-auto object-cover rounded-[20px] shadow-sm"
                               alt={col.title || `Promotional block ${idx + 1}`}

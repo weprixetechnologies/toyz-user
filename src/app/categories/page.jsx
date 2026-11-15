@@ -34,7 +34,7 @@ export default function AllCategoriesPage() {
                   width={300}
                   height={300}
                   src={cat.image}
-                  alt={cat.name}
+                  alt=""
                   loading="lazy"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 280px"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

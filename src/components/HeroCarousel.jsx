@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function HeroCarousel({ banners }) {
   const [activeHero, setActiveHero] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   const nextHero = () => {
     setActiveHero((prev) => (prev + 1) % (banners.length || 1));
@@ -14,6 +15,10 @@ export default function HeroCarousel({ banners }) {
   const prevHero = () => {
     setActiveHero((prev) => (prev - 1 + (banners.length || 1)) % (banners.length || 1));
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!banners || banners.length <= 1) return;
@@ -27,6 +32,8 @@ export default function HeroCarousel({ banners }) {
     <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
       <div className="relative rounded-3xl overflow-hidden shadow-2xl group bg-gray-100">
         {banners.map((banner, idx) => {
+          if (idx !== 0 && !mounted) return null;
+
           let bannerLink = (banner.link_url || '').trim();
           if (bannerLink.includes('localhost')) {
             try {

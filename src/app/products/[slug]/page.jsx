@@ -837,7 +837,7 @@ export default function ProductDetailPage() {
             <button onClick={() => setZoomLevel(z => Math.max(z - 0.5, 1))} className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition">
               <Minus size={24} />
             </button>
-            <button onClick={() => setIsLightboxOpen(false)} className="bg-[#F51F2D] hover:bg-red-600 text-white p-3 rounded-full transition shadow-lg">
+            <button onClick={() => setIsLightboxOpen(false)} aria-label="Close lightbox" className="bg-[#F51F2D] hover:bg-red-600 text-white p-3 rounded-full transition shadow-lg">
               <X size={24} />
             </button>
           </div>

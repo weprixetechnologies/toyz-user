@@ -7,6 +7,8 @@ const nextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1400, 1600, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 200, 240, 256, 384, 420],
     remotePatterns: [
       {
         protocol: 'https',
@@ -21,6 +23,27 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
       {
         source: '/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff2)',
         headers: [
