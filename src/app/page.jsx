@@ -112,6 +112,9 @@ export default async function HomePage() {
                   const pct = Number(col.width_percentage) || Math.round(100 / (section.config_data.length || 1));
                   const colWidthDesktop = Math.round(1440 * (pct / 100));
                   const blockSizes = `(max-width: 768px) 100vw, (max-width: 1024px) ${pct}vw, ${colWidthDesktop}px`;
+                  const ar = Number(col.aspect_ratio) || 2;
+                  const imgWidth = Math.min(Math.max(colWidthDesktop * 2, 600), 1200);
+                  const imgHeight = Math.round(imgWidth / ar);
 
                   return (
                     <div key={idx}
@@ -122,11 +125,12 @@ export default async function HomePage() {
                           <a href={linkHref} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                             {col.image_url && (
                               <Image
-                                width={800}
-                                height={400}
+                                width={imgWidth}
+                                height={imgHeight}
                                 src={col.image_url}
                                 sizes={blockSizes}
                                 loading="lazy"
+                                style={{ aspectRatio: `${ar}` }}
                                 className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
                                 alt={col.title || `Promotional block ${idx + 1}`}
                               />
@@ -136,11 +140,12 @@ export default async function HomePage() {
                           <Link href={linkHref} prefetch={false} className="block w-full h-full">
                             {col.image_url && (
                               <Image
-                                width={800}
-                                height={400}
+                                width={imgWidth}
+                                height={imgHeight}
                                 src={col.image_url}
                                 sizes={blockSizes}
                                 loading="lazy"
+                                style={{ aspectRatio: `${ar}` }}
                                 className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
                                 alt={col.title || `Promotional block ${idx + 1}`}
                               />
@@ -151,11 +156,12 @@ export default async function HomePage() {
                         <div className="w-full h-full">
                           {col.image_url && (
                             <Image
-                              width={800}
-                              height={400}
+                              width={imgWidth}
+                              height={imgHeight}
                               src={col.image_url}
                               sizes={blockSizes}
                               loading="lazy"
+                              style={{ aspectRatio: `${ar}` }}
                               className="w-full h-auto object-cover rounded-[20px] shadow-sm"
                               alt={col.title || `Promotional block ${idx + 1}`}
                             />

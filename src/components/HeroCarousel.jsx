@@ -49,13 +49,13 @@ export default function HeroCarousel({ banners }) {
 
           const imageContent = (
             <Image
-              width={1920}
-              height={500}
+              width={1600}
+              height={640}
               src={banner.image_url}
               alt={banner.title || 'Promotional Banner'}
               priority={isLcp}
               loading={isLcp ? 'eager' : 'lazy'}
-              fetchPriority={isLcp ? 'high' : 'auto'}
+              fetchPriority={isLcp ? 'high' : 'low'}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px"
               className="w-full h-auto block"
             />

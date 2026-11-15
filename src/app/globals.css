@@ -34,6 +34,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   height: 100%;
   animation: moving-gradient 3s ease infinite;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 @keyframes widget-wiggle {
@@ -83,6 +85,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   width: max-content;
   animation: marquee-scroll 28s linear infinite;
   will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .animate-marquee-scroll:hover {

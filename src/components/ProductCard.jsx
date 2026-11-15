@@ -102,7 +102,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               alt={product.name}
               priority={priority}
               loading={priority ? 'eager' : 'lazy'}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+              sizes="(max-width: 640px) 48vw, (max-width: 1024px) 33vw, (max-width: 1440px) 250px, 280px"
               className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
