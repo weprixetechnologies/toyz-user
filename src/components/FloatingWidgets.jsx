@@ -178,6 +178,7 @@ export default function FloatingWidgets() {
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
+                aria-label="Close inquiry form"
                 className="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
                 title="Close"
               >
@@ -224,6 +225,7 @@ export default function FloatingWidgets() {
                 <button
                   type="button"
                   onClick={resetChat}
+                  aria-label="Start over chat"
                   className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
                   title="Start Over"
                 >
@@ -232,6 +234,7 @@ export default function FloatingWidgets() {
                 <button
                   type="button"
                   onClick={() => setActiveModal(null)}
+                  aria-label="Close chat"
                   className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
                   title="Close"
                 >

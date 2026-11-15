@@ -81,6 +81,7 @@ export default function ProductCarousel({ products }) {
       {canScrollLeft && (
         <button 
           onClick={() => scrollByAmount(-300)}
+          aria-label="Previous products"
           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-red-500 hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
         >
           <ChevronLeft size={20} />
@@ -90,6 +91,7 @@ export default function ProductCarousel({ products }) {
       {canScrollRight && (
         <button 
           onClick={() => scrollByAmount(300)}
+          aria-label="Next products"
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-red-500 hover:scale-110 transition-all z-10 opacity-0 group-hover:opacity-100"
         >
           <ChevronRight size={20} />

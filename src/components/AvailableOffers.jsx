@@ -29,7 +29,7 @@ export default function AvailableOffers({ offers = [], selectedIds = [], onToggl
         <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-5 space-y-4" onClick={(event) => event.stopPropagation()}>
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div><h3 className="font-black text-gray-900 text-lg">AVAILABLE OFFERS</h3><p className="text-xs text-gray-500">Choose an offer to apply to this order.</p></div>
-            <button type="button" onClick={() => setOpen(false)} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100" title="Close offers"><X size={18} /></button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close offers dialog" className="p-2 rounded-lg text-gray-500 hover:bg-gray-100" title="Close offers"><X size={18} /></button>
           </div>
           <div className="space-y-2">
             {offers.length === 0 ? (

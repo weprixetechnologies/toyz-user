@@ -20,7 +20,7 @@ const ICONS = {
   custom: FileText
 };
 
-const API_BASE = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:46711/api/v1';
+const API_BASE = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://backend.provokeplaytech.com/api/v1';
 
 async function getPolicies() {
   try {

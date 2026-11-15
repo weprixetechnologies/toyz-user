@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Sparkles, Search, X, ChevronRight, BookOpen,
   Filter, Tag, SlidersHorizontal, Flame, Compass, Heart,
@@ -188,9 +189,13 @@ function BlogsContent() {
               <div className="relative w-64 sm:w-72 md:w-80 aspect-square">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#F51F2D] to-yellow-400 rounded-3xl rotate-3 opacity-20 transform group-hover:rotate-6 transition-transform" />
                 <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white">
-                  <img
+                  <Image
                     src="https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=800&q=80"
                     alt="Provoke Playtech kids playing with RC Cars"
+                    width={400}
+                    height={400}
+                    sizes="(max-width: 768px) 256px, 320px"
+                    priority
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-3 right-3 left-3 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm text-center">

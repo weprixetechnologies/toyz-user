@@ -47,6 +47,7 @@ export default async function HomePage() {
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen pb-20">
+      <h1 className="sr-only">Provoke Playtech — Premium Toys, RC Cars &amp; Educational Games</h1>
 
       {/* Hero Carousel */}
       <HeroCarousel banners={heroBanners} />
@@ -62,7 +63,15 @@ export default async function HomePage() {
             <Link key={cat.id || i} href={`/categories/${cat.slug}`} className="flex flex-col items-center group">
               <div className="w-full aspect-square bg-gray-50 rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex items-center justify-center group-hover:shadow-md group-hover:border-red-200 transition-all group-hover:-translate-y-1 relative">
                 {cat.image ? (
-                  <Image width={800} height={800} src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <Image
+                    width={240}
+                    height={240}
+                    src={cat.image}
+                    alt={cat.name}
+                    loading="lazy"
+                    sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 25vw, 190px"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
                 ) : (
                   <span className="text-4xl">{cat.icon || '🧸'}</span>
                 )}
@@ -90,7 +99,15 @@ export default async function HomePage() {
                 {(section.config_data || []).map((col, idx) => {
                   const rawLink = col.link_url || '';
                   const hasLink = rawLink.trim().length > 0;
-                  const linkHref = hasLink ? rawLink.trim() : '#';
+                  let linkHref = hasLink ? rawLink.trim() : '#';
+                  if (linkHref.includes('localhost')) {
+                    try {
+                      const parsed = new URL(linkHref);
+                      linkHref = parsed.pathname || '/products';
+                    } catch (_) {
+                      linkHref = '/products';
+                    }
+                  }
                   const isExternal = linkHref.startsWith('http://') || linkHref.startsWith('https://');
 
                   return (
@@ -98,12 +115,48 @@ export default async function HomePage() {
                       style={section.layout_style === 'auto' ? { '--col-flex': col.aspect_ratio || 1 } : { '--col-width': `${col.width_percentage}%` }}
                       className={`w-full ${section.layout_style === 'auto' ? 'block-col-auto' : 'block-col flex-grow-0 flex-shrink-0'}`}>
                       {hasLink ? (
-                        <Link href={linkHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="block w-full h-full">
-                          {col.image_url && <Image width={1200} height={600} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition" alt={`Block ${idx}`} />}
-                        </Link>
+                        isExternal ? (
+                          <a href={linkHref} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                            {col.image_url && (
+                              <Image
+                                width={1200}
+                                height={600}
+                                src={col.image_url}
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                                loading="lazy"
+                                className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
+                                alt={col.title || `Promotional block ${idx + 1}`}
+                              />
+                            )}
+                          </a>
+                        ) : (
+                          <Link href={linkHref} prefetch={false} className="block w-full h-full">
+                            {col.image_url && (
+                              <Image
+                                width={1200}
+                                height={600}
+                                src={col.image_url}
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                                loading="lazy"
+                                className="w-full h-auto object-cover rounded-[20px] shadow-sm hover:shadow-md transition"
+                                alt={col.title || `Promotional block ${idx + 1}`}
+                              />
+                            )}
+                          </Link>
+                        )
                       ) : (
                         <div className="w-full h-full">
-                          {col.image_url && <Image width={1200} height={600} src={col.image_url} className="w-full h-auto object-cover rounded-[20px] shadow-sm" alt={`Block ${idx}`} />}
+                          {col.image_url && (
+                            <Image
+                              width={1200}
+                              height={600}
+                              src={col.image_url}
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                              loading="lazy"
+                              className="w-full h-auto object-cover rounded-[20px] shadow-sm"
+                              alt={col.title || `Promotional block ${idx + 1}`}
+                            />
+                          )}
                         </div>
                       )}
                     </div>

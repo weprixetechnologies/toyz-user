@@ -30,7 +30,15 @@ export default function AllCategoriesPage() {
           <Link key={cat.id} href={`/categories/${cat.slug}`} className="bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-red-500/30 rounded-2xl p-4 text-center transition-all group flex flex-col items-center">
             <div className="w-full aspect-square bg-[#F3F4F6] group-hover:bg-[#FFF0D6] rounded-xl flex items-center justify-center mb-4 overflow-hidden transition-colors">
               {cat.image ? (
-                <Image width={800} height={800} src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <Image
+                  width={300}
+                  height={300}
+                  src={cat.image}
+                  alt={cat.name}
+                  loading="lazy"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 280px"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               ) : (
                 <span className="text-4xl font-black text-[#17202A] group-hover:text-red-500">
                   {cat.name.charAt(0)}

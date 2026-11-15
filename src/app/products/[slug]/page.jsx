@@ -306,9 +306,10 @@ export default function ProductDetailPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveImage(idx)}
+                  aria-label={`View image ${idx + 1}`}
                   className={`bg-gray-50 rounded-lg border-2 overflow-hidden aspect-square flex items-center justify-center p-1 transition ${activeImage === idx ? 'border-[#F51F2D]' : 'border-transparent hover:border-gray-200'}`}
                 >
-                  <Image width={800} height={800} src={img.url} alt="thumbnail" className="object-contain w-full h-full mix-blend-multiply" />
+                  <Image width={100} height={100} sizes="80px" src={img.url} alt={`Thumbnail ${idx + 1}`} className="object-contain w-full h-full mix-blend-multiply" />
                 </button>
               ))}
               {allImages.length > 5 && (
@@ -340,13 +341,19 @@ export default function ProductDetailPage() {
                     ))
                   )}
                 </div>
-                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }} className="absolute top-4 right-4 bg-white p-2.5 rounded-full text-gray-400 hover:text-[#F51F2D] shadow-sm hover:shadow transition z-10">
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+                  aria-label={isInWishlist(product?.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  className="absolute top-4 right-4 bg-white p-2.5 rounded-full text-gray-400 hover:text-[#F51F2D] shadow-sm hover:shadow transition z-10"
+                >
                   <Heart size={20} className={isInWishlist(product?.id) ? "fill-[#F51F2D] text-[#F51F2D]" : ""} />
                 </button>
                 <div className="w-full h-full relative cursor-pointer" onClick={() => { setIsLightboxOpen(true); setZoomLevel(1); }}>
                   <Image width={800} height={800}
                     src={allImages[activeImage]?.url}
                     alt={product.name}
+                    priority
+                    sizes="(max-width: 768px) 100vw, 600px"
                     className="w-full h-full object-contain mix-blend-multiply"
                   />
                 </div>
@@ -418,7 +425,7 @@ export default function ProductDetailPage() {
                         className={`w-16 h-16 rounded-xl border-2 p-1 transition ${isSelected ? 'border-[#F51F2D] shadow-md' : 'border-gray-200 hover:border-gray-400'
                           }`}
                       >
-                        <Image width={800} height={800} src={v.image} alt={v.variant_label} className="w-full h-full object-contain rounded-lg mix-blend-multiply" />
+                        <Image width={80} height={80} sizes="80px" src={v.image} alt={v.variant_label} className="w-full h-full object-contain rounded-lg mix-blend-multiply" />
                       </button>
                     );
                   })}

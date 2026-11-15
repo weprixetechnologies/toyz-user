@@ -143,6 +143,7 @@ export default function Navbar() {
               href="/"
               className="inline-flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-red-950/70 border border-red-400/40 hover:scale-105 active:scale-95 transition-all duration-300 group flex-shrink-0"
               title="Return to Normal Store"
+              aria-label="Return to Normal Store"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               <span>RETURN TO NORMAL</span>
@@ -163,12 +164,14 @@ export default function Navbar() {
                 href="/account/wishlist"
                 className="hidden sm:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-900 border border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-400 transition"
                 title="Wishlist"
+                aria-label="Wishlist"
               >
                 <Heart size={18} />
               </Link>
 
               <Link
                 href="/cart"
+                aria-label="Shopping Cart"
                 className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm shadow-md hover:shadow-amber-500/30 transition-all hover:scale-105"
               >
                 <ShoppingCart size={18} />
@@ -248,12 +251,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-6">
 
         {/* Mobile Menu Button */}
-        <button className="md:hidden text-gray-900" onClick={() => setMenuOpen(!menuOpen)}>
+        <button
+          className="md:hidden text-gray-900 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+        >
           {menuOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
 
         {/* Brand Logo */}
-        <Link href="/" className="flex flex-col flex-shrink-0" aria-label="Home">
+        <Link href="/" className="flex flex-col flex-shrink-0" aria-label="Provoke Playtech Home">
           {loadingLogo ? (
             /* Skeleton Loader */
             <div
@@ -266,14 +273,15 @@ export default function Navbar() {
             />
           ) : headerData.logo_url && !logoError ? (
             <div className="flex items-center flex-shrink-0">
-              <img
+              <Image
                 src={headerData.logo_url}
-                alt={headerData.logo_text || 'Store Logo'}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
+                alt={headerData.logo_text || 'Provoke Playtech'}
+                width={desktopWidth}
+                height={Math.round(desktopWidth * 0.3)}
+                sizes="(max-width: 768px) 150px, 200px"
+                priority
                 onError={() => setLogoError(true)}
-                className="h-auto object-contain block max-w-full w-[var(--logo-w-mobile)] md:w-[var(--logo-w-desktop)] md:min-w-[200px] transition-all"
+                className="h-auto object-contain block max-w-full w-[var(--logo-w-mobile)] md:w-[var(--logo-w-desktop)] md:min-w-[200px]"
                 style={{
                   '--logo-w-mobile': `${mobileWidth}px`,
                   '--logo-w-desktop': `${desktopWidth}px`
@@ -316,7 +324,7 @@ export default function Navbar() {
               onFocus={() => setShowSearchDropdown(true)}
               className="w-full px-4 py-2.5 text-sm focus:outline-none text-gray-700"
             />
-            <button type="submit" className="bg-[#F51F2D] text-white px-6 hover:bg-[#d41828] transition flex items-center justify-center">
+            <button type="submit" aria-label="Search products" className="bg-[#F51F2D] text-white px-6 hover:bg-[#d41828] transition flex items-center justify-center">
               <Search size={20} />
             </button>
           </form>
@@ -381,14 +389,14 @@ export default function Navbar() {
                   <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Dashboard</Link>
                   <Link href="/account/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Orders</Link>
                   {user?.role === 'admin' && (
-                    <Link href="http://72.60.219.181:3001" className="block px-4 py-2 text-sm text-sky-700 font-bold hover:bg-sky-50">Admin Panel</Link>
+                    <a href="http://72.60.219.181:3001" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-sky-700 font-bold hover:bg-sky-50">Admin Panel</a>
                   )}
                   <button onClick={logout} className="w-full text-left px-4 py-2 text-sm text-[#F51F2D] font-bold hover:bg-gray-50">Logout</button>
                 </div>
               </div>
             </div>
           ) : (
-            <Link href="/login" className="hidden md:flex items-center gap-2">
+            <Link href="/login" aria-label="Account Login or Sign Up" className="hidden md:flex items-center gap-2">
               <User size={24} className="text-gray-700" />
               <div className="flex flex-col leading-none gap-0.5">
                 <span className="text-[11px] font-bold text-gray-900">Login / Sign Up</span>
@@ -397,7 +405,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          <Link href="/account/wishlist" className="flex flex-col items-center gap-1 group relative">
+          <Link href="/account/wishlist" aria-label="View Wishlist" className="flex flex-col items-center gap-1 group relative min-w-[36px] justify-center">
             <div className="relative">
               <Heart size={24} className="text-gray-700 group-hover:text-[#F51F2D] transition" />
               {wishlist?.length > 0 && (
@@ -409,7 +417,7 @@ export default function Navbar() {
             <span className="hidden md:block text-[10px] font-bold text-gray-600">Wishlist</span>
           </Link>
 
-          <Link href="/cart" className="flex flex-col items-center gap-1 group relative">
+          <Link href="/cart" aria-label="View Shopping Cart" className="flex flex-col items-center gap-1 group relative min-w-[36px] justify-center">
             <div className="relative">
               <ShoppingCart size={24} className="text-gray-700 group-hover:text-[#F51F2D] transition" />
               {itemCount > 0 && (
@@ -470,7 +478,7 @@ export default function Navbar() {
                 onFocus={() => setShowSearchDropdown(true)}
                 className="flex-1 px-4 py-2 text-sm focus:outline-none"
               />
-              <button type="submit" className="bg-[#F51F2D] text-white px-4 flex items-center justify-center">
+              <button type="submit" aria-label="Search products" className="bg-[#F51F2D] text-white px-4 min-w-[44px] min-h-[44px] flex items-center justify-center">
                 <Search size={18} />
               </button>
             </form>

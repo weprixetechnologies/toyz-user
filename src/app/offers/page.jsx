@@ -53,7 +53,7 @@ export default function OffersPage() {
       {/* Header Banner */}
       {banner ? (
         <div className="w-full rounded-3xl overflow-hidden shadow-2xl">
-          <Image width={800} height={800} src={banner.image_url} alt="Offers Banner" className="w-full h-auto block" />
+          <Image width={1920} height={500} sizes="(max-width: 768px) 100vw, 1440px" priority src={banner.image_url} alt="Offers Banner" className="w-full h-auto block" />
         </div>
       ) : (
         <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">

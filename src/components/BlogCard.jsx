@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Clock, ArrowRight, Tag } from 'lucide-react';
 
 export default function BlogCard({ blog, priority = false }) {
@@ -27,13 +28,17 @@ export default function BlogCard({ blog, priority = false }) {
         <Link
           href={`/blogs/${blog.slug}`}
           className="block relative aspect-[16/10] overflow-hidden bg-gray-100"
-          tabIndex={-1}
+          aria-label={blog.title}
         >
           {blog.featured_image ? (
-            <img
+            <Image
               src={blog.featured_image}
               alt={blog.title || 'Blog article'}
+              width={600}
+              height={375}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              priority={priority}
               loading={priority ? 'eager' : 'lazy'}
             />
           ) : (

@@ -205,9 +205,13 @@ export default function BlogDetailPage() {
               {/* ── 4.3 Article Hero Image ─────────────────────────────────── */}
               {blog.featured_image && (
                 <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
-                  <img
+                  <Image
                     src={blog.featured_image}
                     alt={blog.title}
+                    width={1200}
+                    height={675}
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    priority
                     className="w-full h-full object-cover"
                   />
                   {blog.category_name && (
@@ -372,9 +376,12 @@ export default function BlogDetailPage() {
                         <div>
                           <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden mb-3 relative">
                             {prod.primary_image ? (
-                              <img
+                              <Image
                                 src={prod.primary_image}
                                 alt={prod.name}
+                                width={200}
+                                height={200}
+                                sizes="150px"
                                 className="w-full h-full object-contain p-2 hover:scale-105 transition-transform"
                               />
                             ) : (
@@ -465,9 +472,12 @@ export default function BlogDetailPage() {
                     >
                       <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 relative">
                         {rel.featured_image ? (
-                          <img
+                          <Image
                             src={rel.featured_image}
                             alt={rel.title}
+                            width={80}
+                            height={80}
+                            sizes="64px"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         ) : (

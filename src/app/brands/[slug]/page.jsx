@@ -59,7 +59,7 @@ export default function BrandProductsPage() {
             <div>
               <div className="bg-white p-6 rounded-lg shadow-sm mb-8 border border-slate-200 flex items-center gap-4">
                 {brand?.logo_url && (
-                  <Image width={800} height={800} src={brand.logo_url} alt={brand.name} className="w-16 h-16 object-contain rounded" />
+                  <Image width={80} height={80} sizes="64px" src={brand.logo_url} alt={brand.name} className="w-16 h-16 object-contain rounded" />
                 )}
                 <div>
                   <h1 className="text-3xl font-bold text-slate-800 mb-1">{brand?.name}</h1>

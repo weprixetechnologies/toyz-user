@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Gift, Facebook, Twitter, Instagram, Youtube,
   Linkedin, MessageCircle, Share2
@@ -170,11 +171,14 @@ export default function Footer() {
           {/* Brand Column */}
           {brand.show_brand_column !== false && (
             <div className="space-y-6">
-              <Link href="/" className="text-3xl font-black tracking-tight text-white flex items-center gap-2">
+              <Link href="/" aria-label={brand.logo_text || 'Provoke Playtech Home'} className="text-3xl font-black tracking-tight text-white flex items-center gap-2">
                 {brand.logo_url && !logoError ? (
-                  <img
+                  <Image
                     src={brand.logo_url}
-                    alt={brand.logo_text || 'Store Logo'}
+                    alt={brand.logo_text || 'Provoke Playtech'}
+                    width={160}
+                    height={48}
+                    sizes="160px"
                     onError={() => setLogoError(true)}
                     className="max-h-12 w-auto object-contain"
                   />
@@ -205,8 +209,8 @@ export default function Footer() {
                           href={s.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label={s.label || s.platform || 'Social Link'}
-                          className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#F51F2D] hover:scale-110 transition-all"
+                          aria-label={s.label || (s.platform ? `Visit our ${s.platform} page` : 'Social Media Link')}
+                          className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#F51F2D] hover:scale-110 transition-all"
                         >
                           <Icon size={18} />
                         </a>
@@ -222,9 +226,9 @@ export default function Footer() {
             columns.map((col, idx) => (
               <div key={col.id || idx}>
                 {col.heading && (
-                  <h4 className="text-lg font-black mb-6 text-white uppercase tracking-wider">
+                  <h3 className="text-lg font-black mb-6 text-white uppercase tracking-wider">
                     {col.heading}
-                  </h4>
+                  </h3>
                 )}
 
                 {col.type === 'custom' ? (
@@ -268,12 +272,12 @@ export default function Footer() {
         {/* Dynamic Bottom Bar */}
         {bottom_bar.enabled !== false && (
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm font-medium text-[#5F6872] text-center md:text-left">
+            <p className="text-sm font-medium text-[#94A3B8] text-center md:text-left">
               {copyrightText}
             </p>
 
             {Array.isArray(bottom_bar.links) && bottom_bar.links.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-[#5F6872]">
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-[#94A3B8]">
                 {bottom_bar.links.map((blink, bIdx) => {
                   const isInternal = blink.url && blink.url.startsWith('/') && !blink.url.startsWith('//');
                   const isBlank = blink.target === '_blank';

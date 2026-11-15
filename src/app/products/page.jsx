@@ -627,6 +627,7 @@ function ProductsContent() {
                               src={b.image_url}
                               alt={b.title || 'Shop Banner'}
                               priority={i === 0}
+                              sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
                               className="w-full h-auto object-cover"
                             />
                           </Link>
@@ -637,6 +638,7 @@ function ProductsContent() {
                             src={b.image_url}
                             alt={b.title || 'Shop Banner'}
                             priority={i === 0}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
                             className="w-full h-auto object-cover"
                           />
                         )}
@@ -649,6 +651,7 @@ function ProductsContent() {
                       <button
                         key={i}
                         onClick={() => setCurrentSlide(i)}
+                        aria-label={`Go to slide ${i + 1}`}
                         className={`w-2 h-2 rounded-full transition-colors ${currentSlide === i ? 'bg-white' : 'bg-white/50'}`}
                       />
                     ))}
@@ -664,6 +667,7 @@ function ProductsContent() {
                         src={shopBanners[0].image_url}
                         alt={shopBanners[0].title || 'Shop Banner'}
                         priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
                         className="w-full h-auto object-cover"
                       />
                     </Link>
@@ -674,6 +678,7 @@ function ProductsContent() {
                       src={shopBanners[0].image_url}
                       alt={shopBanners[0].title || 'Shop Banner'}
                       priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1440px) 100vw, 1440px"
                       className="w-full h-auto object-cover"
                     />
                   )}

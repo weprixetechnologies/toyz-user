@@ -81,6 +81,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
       {/* ── Wishlist button ──────────────────────────────────────────────────── */}
       <button 
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.id); }}
+        aria-label={isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
         className={`absolute top-3 right-3 p-1.5 rounded-full transition-colors z-10 shadow-sm ${
           isInWishlist(product.id) 
             ? 'bg-[#F51F2D] text-white hover:bg-[#D41825]' 
@@ -91,7 +92,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
       </button>
 
       {/* ── Product image ────────────────────────────────────────────────────── */}
-      <Link href={`/products/${product.slug || product.id}`} className="block relative">
+      <Link href={`/products/${product.slug || product.id}`} aria-label={product.name} className="block relative">
         <div className="aspect-square bg-[#FFF0D6]/20 flex items-center justify-center overflow-hidden">
           {product.primary_image || product.image || product.images?.[0]?.url ? (
             <Image
@@ -101,7 +102,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               alt={product.name}
               priority={priority}
               loading={priority ? 'eager' : 'lazy'}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 270px"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
               className="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
@@ -142,8 +143,8 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               );
             })}
             {product.review_count > 0
-              ? <span className="text-[11px] text-[#8792A2] ml-1">({product.review_count})</span>
-              : <span className="text-[11px] text-[#8792A2] ml-1">No reviews</span>
+              ? <span className="text-[11px] text-[#64748B] ml-1">({product.review_count})</span>
+              : <span className="text-[11px] text-[#64748B] ml-1">No reviews</span>
             }
           </div>
 
@@ -159,7 +160,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               {/* Strikethrough price + discount badge BESIDE it */}
               {crossPrice > displayPrice && (
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-semibold text-[#8792A2] line-through">
+                  <span className="text-xs font-semibold text-[#64748B] line-through">
                     &#8377;{crossPrice.toLocaleString('en-IN')}
                   </span>
                   {discount > 0 && (
@@ -181,6 +182,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
             {product.product_type === 'variable' ? (
               <Link
                 href={`/products/${product.slug || product.id}`}
+                aria-label={`Select options for ${product.name}`}
                 className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 bg-[#17202A] hover:bg-[#F51F2D] text-white shadow-sm hover:shadow-md"
                 title="Select Options"
               >
@@ -190,6 +192,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
               <button
                 disabled
                 title="Out of stock"
+                aria-label="Out of stock"
                 className="flex-shrink-0 px-2.5 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-80"
               >
                 Out of Stock
@@ -197,6 +200,7 @@ function ProductCard({ product, priority = false, forceReseller = false }) {
             ) : (
               <button
                 onClick={handleAddToCart}
+                aria-label={`Add ${product.name} to cart`}
                 className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
                   added
                     ? 'bg-[#18A957] text-white shadow-md'

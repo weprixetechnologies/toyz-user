@@ -43,7 +43,7 @@ export default function MyReviewsPage() {
               <div className="flex gap-4">
                 <Link href={`/products/${review.product_slug}`} className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
                   {review.product_image ? (
-                    <img src={review.product_image} className="w-full h-full object-cover" />
+                    <img src={review.product_image} alt={review.product_name || "Product"} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300">No Img</div>
                   )}

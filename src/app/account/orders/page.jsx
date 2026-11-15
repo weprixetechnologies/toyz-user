@@ -64,7 +64,7 @@ export default function MyOrdersPage() {
                     {o.items.slice(0, 4).map((item, idx) => (
                       <Link key={idx} href={`/products/${item.slug || item.product_id}`} title={item.product_name} className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden group">
                         {item.product_image ? (
-                           <img src={item.product_image} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                           <img src={item.product_image} alt={item.product_name || "Product"} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                         ) : (
                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">Img</div>
                         )}

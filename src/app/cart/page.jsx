@@ -161,7 +161,7 @@ export default function CartPage() {
                     <input type="checkbox" defaultChecked className="w-5 h-5 rounded text-sky-600 focus:ring-sky-500 border-gray-300 cursor-pointer" />
                   </div>
                   <div className="w-24 h-24 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                    {item.image ? <Image width={800} height={800} src={item.image} alt={item.product_name} className="object-cover h-full w-full rounded-xl" /> : <ShoppingBag className="text-gray-400" size={24} />}
+                    {item.image ? <Image width={120} height={120} sizes="96px" src={item.image} alt={item.product_name} className="object-cover h-full w-full rounded-xl" /> : <ShoppingBag className="text-gray-400" size={24} />}
                   </div>
                   <div className="flex-1">
                     <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">Best Seller</span>

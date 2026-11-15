@@ -18,14 +18,22 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 @keyframes moving-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    transform: translateX(-33.33%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
 }
 
 .animate-moving-gradient {
-  background-size: 200% 200%;
+  width: 150%;
+  height: 100%;
   animation: moving-gradient 3s ease infinite;
+  will-change: transform;
 }
 
 @keyframes widget-wiggle {
@@ -51,7 +59,9 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 .animate-widget-wiggle {
   animation: widget-wiggle var(--wiggle-duration, 6s) ease-in-out infinite;
+  transform-origin: center center;
   will-change: transform;
+  backface-visibility: hidden;
 }
 
 .animate-widget-wiggle:hover {

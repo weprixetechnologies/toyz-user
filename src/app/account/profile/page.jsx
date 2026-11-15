@@ -132,6 +132,7 @@ export default function ProfilePage() {
             
             <button 
               onClick={() => avatarInputRef.current?.click()}
+              aria-label="Change profile avatar"
               className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Camera size={24} className="text-white" />

@@ -119,7 +119,7 @@ export default function AccountDashboardPage() {
                   <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 text-gray-400 overflow-hidden relative">
                     {o.items && o.items.length > 0 && o.items[0].product_image ? (
                       <>
-                        <img src={o.items[0].product_image} className="w-full h-full object-cover" />
+                        <img src={o.items[0].product_image} alt={o.items[0].product_name || "Order item"} className="w-full h-full object-cover" />
                         {o.items.length > 1 && (
                           <div className="absolute bottom-0 right-0 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-lg">
                             +{o.items.length - 1}
@@ -168,7 +168,7 @@ export default function AccountDashboardPage() {
                   <Heart size={12} className="fill-red-500" />
                 </div>
                 <div className="aspect-square bg-gray-50 rounded-xl mb-3 overflow-hidden">
-                  {w.primary_image ? <img src={w.primary_image} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <div className="w-full h-full flex items-center justify-center text-gray-300">Toy</div>}
+                  {w.primary_image ? <img src={w.primary_image} alt={w.name || "Wishlist item"} className="w-full h-full object-cover group-hover:scale-110 transition-transform" /> : <div className="w-full h-full flex items-center justify-center text-gray-300">Toy</div>}
                 </div>
                 <div className="font-bold text-xs text-gray-900 line-clamp-1 group-hover:text-indigo-600 transition-colors">{w.name}</div>
                 <div className="font-black text-sm text-gray-900 mt-1">₹{parseFloat(w.sale_price || w.base_price || 0).toLocaleString('en-IN')}</div>
