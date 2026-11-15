@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus, Lock, CheckCircle2, Banknote, Zap, Wallet } from 'lucide-react';
+import { ShieldCheck, MapPin, CreditCard, Truck, AlertTriangle, Plus, Lock, CheckCircle2, Banknote, Zap, Wallet, Info, X, PhoneCall, Check } from 'lucide-react';
 import AvailableOffers from '../../components/AvailableOffers';
 
 
@@ -18,6 +18,7 @@ function CheckoutContent() {
   const { user, loading: authLoading, isReseller } = useAuth();
   const { cart, clearCart } = useCart();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPayInAdvanceModal, setShowPayInAdvanceModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -34,7 +35,21 @@ function CheckoutContent() {
   const [newAddr, setNewAddr] = useState({ line1: '', city: '', state: '', pin_code: '', phone: '' });
 
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [selectedMethod, setSelectedMethod] = useState('cod');
+  const [selectedMethod, setSelectedMethod] = useState(isReseller ? 'pay_in_advance' : 'cod');
+
+  useEffect(() => {
+    if (isReseller) {
+      setSelectedMethod('pay_in_advance');
+      setPaymentMethods([
+        {
+          key_name: 'pay_in_advance',
+          display_name: 'Pay In Advance',
+          type: 'pay_in_advance',
+          is_active: true
+        }
+      ]);
+    }
+  }, [isReseller]);
 
   const [shippingOptions, setShippingOptions] = useState([]);
   const [selectedShipping, setSelectedShipping] = useState(null);
@@ -93,9 +108,21 @@ function CheckoutContent() {
       }
 
       if (payRes.success) {
-        const methods = payRes.data?.methods || payRes.data || [];
+        let methods = payRes.data?.methods || payRes.data || [];
+        if (isReseller) {
+          methods = [
+            {
+              key_name: 'pay_in_advance',
+              display_name: 'Pay In Advance',
+              type: 'pay_in_advance',
+              is_active: true
+            }
+          ];
+          setSelectedMethod('pay_in_advance');
+        } else if (methods.length > 0) {
+          setSelectedMethod(methods[0].key_name || methods[0].code || 'cod');
+        }
         setPaymentMethods(methods);
-        if (methods.length > 0) setSelectedMethod(methods[0].key_name || methods[0].code || 'cod');
       }
 
       setLoading(false);
@@ -107,7 +134,7 @@ function CheckoutContent() {
       setSelectedOfferIds([]);
     }
     loadCheckoutData();
-  }, [user?.id, isBuyNow]);
+  }, [user?.id, isBuyNow, isReseller]);
 
   const handleCreateAddress = async (e) => {
     e.preventDefault();
@@ -140,9 +167,11 @@ function CheckoutContent() {
 
     setSubmitting(true);
 
+    const isPayInAdvance = isReseller || selectedMethod === 'pay_in_advance';
+
     const payload = {
       shipping_address_id: selectedAddressId,
-      payment_method: selectedMethod,
+      payment_method: isPayInAdvance ? 'pay_in_advance' : selectedMethod,
       shipping_option_id: selectedShipping?.id,
       notes: '',
       is_buy_now: isBuyNow,
@@ -155,27 +184,29 @@ function CheckoutContent() {
     if (res.success && res.data) {
       const orderId = res.data.order?.id || res.data.id;
 
-      // Online Gateway Flow (PhonePe, etc.)
-      if (selectedMethod !== 'cod') {
-        const initRes = await api.post('/payments/initiate', {
-          order_id: orderId,
-          gateway_key: selectedMethod
-        });
-
-        if (initRes.success && (initRes.data?.redirect_url || initRes.data?.checkout_url)) {
-          await clearCart();
-          const targetUrl = initRes.data.redirect_url || initRes.data.checkout_url;
-          window.location.href = targetUrl;
-          return;
-        } else {
-          setErrorMessage(initRes.message || 'Payment initiation failed. Your cart has been preserved. You may retry or select another payment option.');
-          setSubmitting(false);
-          return;
-        }
+      // For Resellers (Pay in Advance) or COD: Order placed with no online gateway redirect
+      if (isPayInAdvance || selectedMethod === 'cod') {
+        await clearCart();
+        router.push(`/checkout/success?orderId=${orderId}`);
+        return;
       }
 
-      await clearCart();
-      router.push(`/checkout/success?orderId=${orderId}`);
+      // Online Gateway Flow (PhonePe, etc.)
+      const initRes = await api.post('/payments/initiate', {
+        order_id: orderId,
+        gateway_key: selectedMethod
+      });
+
+      if (initRes.success && (initRes.data?.redirect_url || initRes.data?.checkout_url)) {
+        await clearCart();
+        const targetUrl = initRes.data.redirect_url || initRes.data.checkout_url;
+        window.location.href = targetUrl;
+        return;
+      } else {
+        setErrorMessage(initRes.message || 'Payment initiation failed. Your cart has been preserved. You may retry or select another payment option.');
+        setSubmitting(false);
+        return;
+      }
     } else {
       setErrorMessage(res.message || 'Failed to place order. Please try again.');
       setSubmitting(false);
@@ -254,7 +285,7 @@ function CheckoutContent() {
   }
 
   // Graceful Checkout Blocked State
-  if (paymentMethods.length === 0) {
+  if (!isReseller && paymentMethods.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center bg-white p-8 rounded-2xl border border-red-200 shadow-md space-y-4">
         <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
@@ -382,132 +413,181 @@ function CheckoutContent() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              {paymentMethods.map((m) => {
-                const key = m.key_name || m.code || 'cod';
-                const isSelected = selectedMethod === key;
-                const isPhonePe = key.toLowerCase().includes('phonepe');
-                const isCod = key.toLowerCase() === 'cod';
-                const isRazorpay = key.toLowerCase().includes('razorpay');
+            {isReseller ? (
+              <div className="space-y-4">
+                <div className="p-5 sm:p-6 rounded-2xl border-2 border-indigo-600 bg-indigo-50/40 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-black tracking-wider uppercase px-4 py-1 rounded-bl-xl shadow-xs">
+                    B2B Reseller Flow
+                  </div>
 
-                return (
-                  <label
-                    key={key}
-                    onClick={() => setSelectedMethod(key)}
-                    className={`relative flex flex-col p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                      isSelected
-                        ? 'border-indigo-600 bg-indigo-50/30 shadow-md ring-2 ring-indigo-500/10'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={key}
-                      checked={isSelected}
-                      onChange={(e) => setSelectedMethod(e.target.value)}
-                      className="sr-only"
-                    />
-
-                    {/* Top Row: Radio, Title, Badges */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3.5">
-                        {/* Custom Radio Button */}
-                        <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                          isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'
-                        }`}>
-                          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-
-                        {/* Title & Description */}
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-gray-900 text-sm sm:text-base">
-                              {isPhonePe
-                                ? 'PhonePe (UPI, Cards, NetBanking, Wallets)'
-                                : isCod
-                                ? 'Cash on Delivery (COD)'
-                                : isRazorpay
-                                ? 'Cards, NetBanking, UPI (Razorpay)'
-                                : (m.display_name || key.toUpperCase())}
-                            </span>
-                            {isPhonePe && (
-                              <span className="bg-purple-100 text-[#5f259f] font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                Recommended
-                              </span>
-                            )}
-                            {isCod && (
-                              <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                Pay at Doorstep
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            {isPhonePe
-                              ? 'Pay securely with PhonePe, Google Pay, Paytm, BHIM UPI, Debit/Credit Card or Net Banking.'
-                              : isCod
-                              ? 'Pay via cash or UPI to delivery agent when your order arrives.'
-                              : 'Instant checkout via all major debit/credit cards, UPI and Net Banking.'}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Right Visual Icon */}
-                      <div className="shrink-0 items-center gap-1.5 hidden sm:flex">
-                        {isPhonePe && (
-                          <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#5f259f] flex items-center justify-center font-black text-base border border-purple-100 shadow-sm">
-                            <Zap size={20} className="fill-purple-600 text-purple-600" />
-                          </div>
-                        )}
-                        {isCod && (
-                          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-base border border-emerald-100 shadow-sm">
-                            <Banknote size={22} className="text-emerald-600" />
-                          </div>
-                        )}
-                        {!isPhonePe && !isCod && (
-                          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black text-base border border-sky-100 shadow-sm">
-                            <CreditCard size={20} className="text-sky-600" />
-                          </div>
-                        )}
-                      </div>
+                  <div className="flex items-start gap-3.5">
+                    <div className="mt-1 w-5 h-5 rounded-full border-2 border-indigo-600 bg-indigo-600 flex items-center justify-center shrink-0">
+                      <div className="w-2 h-2 rounded-full bg-white" />
                     </div>
 
-                    {/* Active Expanded Badges */}
-                    {isSelected && isPhonePe && (
-                      <div className="mt-3.5 pt-3 border-t border-indigo-100/70 flex flex-wrap items-center gap-2">
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Supported:</span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
-                          GPay
-                        </span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-purple-700 text-[10px] font-black rounded-lg shadow-xs">
-                          PhonePe
-                        </span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-sky-600 text-[10px] font-black rounded-lg shadow-xs">
-                          Paytm
-                        </span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
-                          BHIM UPI
-                        </span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
-                          Debit & Credit Cards
-                        </span>
-                        <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
-                          Net Banking
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">
+                          PAY IN ADVANCE
+                        </h4>
+                        <span className="bg-amber-100 text-amber-900 border border-amber-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          No Online Payment Due Now
                         </span>
                       </div>
-                    )}
 
-                    {isSelected && isCod && (
-                      <div className="mt-3.5 pt-3 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-800 font-medium">
-                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
-                        <span>No advance payment needed. You can pay cash or scan delivery agent's UPI QR upon delivery.</span>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed max-w-2xl">
+                        Order will be placed immediately under <strong>Pending Approval</strong>. Post authority approval, our store team will contact you directly with order details and coordinate payment (outside the website, with multiple split payments supported). Products will be dispatched upon payment.
+                      </p>
+
+                      <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowPayInAdvanceModal(true)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+                        >
+                          <Info size={14} />
+                          <span>KNOW MORE (How It Works)</span>
+                        </button>
+
+                        <span className="text-[11px] text-indigo-700 bg-indigo-100/70 border border-indigo-200 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">
+                          <CheckCircle2 size={13} className="text-indigo-600" /> Multiple Split Payments Accepted
+                        </span>
+                        <span className="text-[11px] text-indigo-700 bg-indigo-100/70 border border-indigo-200 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">
+                          <PhoneCall size={13} className="text-indigo-600" /> Store Contacts You Post-Approval
+                        </span>
                       </div>
-                    )}
-                  </label>
-                );
-              })}
-            </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {paymentMethods.map((m) => {
+                  const key = m.key_name || m.code || 'cod';
+                  const isSelected = selectedMethod === key;
+                  const isPhonePe = key.toLowerCase().includes('phonepe');
+                  const isCod = key.toLowerCase() === 'cod';
+                  const isRazorpay = key.toLowerCase().includes('razorpay');
+
+                  return (
+                    <label
+                      key={key}
+                      onClick={() => setSelectedMethod(key)}
+                      className={`relative flex flex-col p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? 'border-indigo-600 bg-indigo-50/30 shadow-md ring-2 ring-indigo-500/10'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-white'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        value={key}
+                        checked={isSelected}
+                        onChange={(e) => setSelectedMethod(e.target.value)}
+                        className="sr-only"
+                      />
+
+                      {/* Top Row: Radio, Title, Badges */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3.5">
+                          {/* Custom Radio Button */}
+                          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                            isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300 bg-white'
+                          }`}>
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          </div>
+
+                          {/* Title & Description */}
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-black text-gray-900 text-sm sm:text-base">
+                                {isPhonePe
+                                  ? 'PhonePe (UPI, Cards, NetBanking, Wallets)'
+                                  : isCod
+                                  ? 'Cash on Delivery (COD)'
+                                  : isRazorpay
+                                  ? 'Cards, NetBanking, UPI (Razorpay)'
+                                  : (m.display_name || key.toUpperCase())}
+                              </span>
+                              {isPhonePe && (
+                                <span className="bg-purple-100 text-[#5f259f] font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                  Recommended
+                                </span>
+                              )}
+                              {isCod && (
+                                <span className="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                  Pay at Doorstep
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                              {isPhonePe
+                                ? 'Pay securely with PhonePe, Google Pay, Paytm, BHIM UPI, Debit/Credit Card or Net Banking.'
+                                : isCod
+                                ? 'Pay via cash or UPI to delivery agent when your order arrives.'
+                                : 'Instant checkout via all major debit/credit cards, UPI and Net Banking.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right Visual Icon */}
+                        <div className="shrink-0 items-center gap-1.5 hidden sm:flex">
+                          {isPhonePe && (
+                            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#5f259f] flex items-center justify-center font-black text-base border border-purple-100 shadow-sm">
+                              <Zap size={20} className="fill-purple-600 text-purple-600" />
+                            </div>
+                          )}
+                          {isCod && (
+                            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-base border border-emerald-100 shadow-sm">
+                              <Banknote size={22} className="text-emerald-600" />
+                            </div>
+                          )}
+                          {!isPhonePe && !isCod && (
+                            <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-black text-base border border-sky-100 shadow-sm">
+                              <CreditCard size={20} className="text-sky-600" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Active Expanded Badges */}
+                      {isSelected && isPhonePe && (
+                        <div className="mt-3.5 pt-3 border-t border-indigo-100/70 flex flex-wrap items-center gap-2">
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Supported:</span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                            GPay
+                          </span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-purple-700 text-[10px] font-black rounded-lg shadow-xs">
+                            PhonePe
+                          </span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-sky-600 text-[10px] font-black rounded-lg shadow-xs">
+                            Paytm
+                          </span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                            BHIM UPI
+                          </span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                            Debit & Credit Cards
+                          </span>
+                          <span className="px-2.5 py-1 bg-white border border-gray-200 text-slate-700 text-[10px] font-black rounded-lg shadow-xs">
+                            Net Banking
+                          </span>
+                        </div>
+                      )}
+
+                      {isSelected && isCod && (
+                        <div className="mt-3.5 pt-3 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-800 font-medium">
+                          <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                          <span>No advance payment needed. You can pay cash or scan delivery agent's UPI QR upon delivery.</span>
+                        </div>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Reassuring Security Footer */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
@@ -606,14 +686,151 @@ function CheckoutContent() {
             disabled={submitting}
             className="w-full bg-slate-900 hover:bg-sky-600 text-white font-bold py-3.5 rounded-xl transition shadow-lg disabled:opacity-50"
           >
-            {submitting ? 'Placing Order...' : 'Confirm & Place Order'}
+            {submitting ? 'Placing Order...' : isReseller ? 'Place Order (Pay In Advance)' : 'Confirm & Place Order'}
           </button>
+
+          {isReseller && (
+            <p className="text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/60 p-2.5 rounded-xl text-center font-medium">
+              Reseller checkout: No online payment will be charged today. Order is placed for approval.
+            </p>
+          )}
 
           <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1">
             <ShieldCheck size={14} /> 256-bit Encrypted Transaction
           </p>
         </div>
       </form>
+
+      {/* Know More Modal for Pay In Advance */}
+      {showPayInAdvanceModal && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 relative">
+              <button
+                type="button"
+                onClick={() => setShowPayInAdvanceModal(false)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 mb-2">
+                Reseller Payment Workflow
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black">
+                How "Pay In Advance" Works
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-lg">
+                Zero online payment required right now. Here is what happens from checkout to delivery:
+              </p>
+            </div>
+
+            {/* Modal Body: The 5 Steps */}
+            <div className="p-6 sm:p-7 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="relative pl-8 sm:pl-10 space-y-6 before:absolute before:left-3.5 sm:before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-indigo-200">
+                
+                {/* Step 1 */}
+                <div className="relative">
+                  <div className="absolute -left-8 sm:-left-10 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md">
+                    1
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Order Gets Placed (No Payment Yet)
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      You add items to your cart and confirm checkout. No card, UPI, or online payment is required right now. Your order is registered immediately.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="relative">
+                  <div className="absolute -left-8 sm:-left-10 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-500 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md">
+                    2
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Pending Approval
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      The order is set to <strong>Pending Approval</strong>. The administrative authority reviews line items, inventory availability, and wholesale pricing.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative">
+                  <div className="absolute -left-8 sm:-left-10 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-sky-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md">
+                    3
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Post Approval: Store Contacts You for Payment & Confirmation
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Once approved by the authority, our store will contact you directly (via Phone, WhatsApp, or Email) with your final invoice, bank details, and order confirmation.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 4 */}
+                <div className="relative">
+                  <div className="absolute -left-8 sm:-left-10 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md">
+                    4
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Payment Outside the Website (Split Payments Supported)
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Payments are made outside the website (e.g. Bank Transfer, NEFT, RTGS, UPI). You can pay in multiple <strong>splits / installments</strong>. The admin updates each split payment directly into your order details with remarks and proof.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step 5 */}
+                <div className="relative">
+                  <div className="absolute -left-8 sm:-left-10 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md">
+                    5
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Products Are Dispatched
+                    </h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      As payments are received and confirmed, our warehouse packages and dispatches your products. You can track all courier shipments live from your dashboard.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200/80 rounded-2xl p-4 text-xs text-indigo-900">
+                <p className="font-bold flex items-center gap-1.5 mb-1">
+                  <ShieldCheck size={16} className="text-indigo-600" />
+                  Full Order & Payment Tracking
+                </p>
+                <p className="text-indigo-800 leading-relaxed">
+                  Total Order Value, Total Paid, Remaining Pending Balance, Dates, and Store Remarks are continuously updated in your Order Detail page for complete transparency.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowPayInAdvanceModal(false)}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                I Understand & Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Secure Checkout Processing Modal */}
       {submitting && (
@@ -636,7 +853,7 @@ function CheckoutContent() {
             </h3>
 
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xs mx-auto mb-6">
-              Please wait while we encrypt and secure your transaction. Do not refresh or press back.
+              Please wait while we encrypt and record your order. Do not refresh or press back.
             </p>
 
             <div className="bg-slate-50 rounded-2xl p-4 text-left space-y-2.5 border border-slate-100">
@@ -652,13 +869,13 @@ function CheckoutContent() {
                 <div className="w-4 h-4 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
                   <div className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-ping" />
                 </div>
-                <span>Connecting to payment gateway...</span>
+                <span>{isReseller ? 'Registering Pay in Advance order...' : 'Connecting to payment gateway...'}</span>
               </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
               <ShieldCheck size={14} className="text-emerald-500" />
-              <span>100% Safe & Encrypted Payment</span>
+              <span>100% Safe & Encrypted Checkout</span>
             </div>
           </div>
         </div>
