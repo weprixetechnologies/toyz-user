@@ -660,101 +660,17 @@ export default function ProductDetailPage() {
         {/* Tab Content */}
         <div className="py-8">
           {activeTab === 'details' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-              {/* Left Key Features Grid */}
-              <div className="lg:col-span-3 border border-gray-200 rounded-xl p-6 bg-gray-50/50 h-fit">
-                <h3 className="font-black text-gray-900 text-lg mb-6">Key Features</h3>
-                <div className="space-y-6">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Truck size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">4WD All-Terrain Performance</h4>
-                      <p className="text-[11px] text-gray-500">Conquer sand, mud, grass and rocky paths</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Zap size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">High Speed Motor</h4>
-                      <p className="text-[11px] text-gray-500">Up to 70+ KM/H speed</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><ShieldCheck size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">Durable & Shockproof Design</h4>
-                      <p className="text-[11px] text-gray-500">Built for rough and tough play</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Headset size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">2.4GHz Remote Control</h4>
-                      <p className="text-[11px] text-gray-500">Smooth and interference-free control</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Zap size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">Rechargeable Battery</h4>
-                      <p className="text-[11px] text-gray-500">Long playtime with USB charging</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><Star size={16} /></div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 mb-0.5">Perfect Gift for Kids</h4>
-                      <p className="text-[11px] text-gray-500">Ideal for ages 6+ years</p>
-                    </div>
-                  </div>
+            <div className="w-full">
+              {product.description ? (
+                <div
+                  className="w-full prose prose-slate max-w-none text-gray-800 leading-relaxed prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-li:marker:text-[#F51F2D] prose-img:rounded-2xl prose-img:w-full prose-table:w-full"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              ) : (
+                <div className="w-full py-12 text-center text-gray-400 text-sm">
+                  No description provided for this product.
                 </div>
-              </div>
-
-              {/* Center HTML Description */}
-              <div className="lg:col-span-6">
-                <h3 className="font-black text-gray-900 text-lg mb-4">Product Description</h3>
-
-                {product.description ? (
-                  <div
-                    className="prose prose-sm md:prose-base max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-li:text-gray-600 prose-li:marker:text-[#F51F2D]"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
-                  />
-                ) : (
-                  <div className="prose prose-sm md:prose-base max-w-none text-gray-600 leading-relaxed">
-                    <p>Experience the thrill of high-speed racing with the 1:16 Off-Road RC Car. Built with a powerful 4WD motor, durable shock absorbers, and all-terrain tires, this RC car is designed for adventure. Whether it's grass, sand, mud or rocky roads, this car delivers smooth and exciting performance. Perfect for kids, hobbyists and RC enthusiasts.</p>
-                    <ul className="list-disc pl-5 space-y-2 mt-4 marker:text-[#F51F2D]">
-                      <li>Realistic off-road design with high ground clearance</li>
-                      <li>Strong and durable ABS body</li>
-                      <li>High-speed performance up to 70+ KM/H</li>
-                      <li>Rechargeable battery with USB charging</li>
-                      <li>Perfect gift for birthdays and special occasions</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Right Promo Banner */}
-              <div className="lg:col-span-4 flex flex-col gap-4">
-                <div className="rounded-xl overflow-hidden relative bg-[#071C2B] group cursor-pointer aspect-video md:aspect-auto h-full min-h-[250px]">
-                  <Image width={800} height={800} src="https://cly-pull-bunny.b-cdn.net/hero_banner_1790409173201.jpg" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay group-hover:scale-105 transition duration-700" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white flex items-center justify-center group-hover:bg-[#F51F2D] group-hover:border-[#F51F2D] transition shadow-lg">
-                      <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[16px] border-l-white border-b-[10px] border-b-transparent ml-1"></div>
-                    </div>
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <h4 className="text-xl font-black text-white italic tracking-tighter leading-none">BUILT FOR<br /><span className="text-[#FFD600] text-2xl">BIGGER ADVENTURES</span></h4>
-                  </div>
-                  <div className="absolute bottom-4 left-0 w-full px-4 grid grid-cols-4 gap-2 text-center text-white">
-                    <div><div className="text-xs font-black">70+</div><div className="text-[8px] uppercase tracking-wider text-gray-300">KM/H Speed</div></div>
-                    <div><div className="text-xs font-black">4WD</div><div className="text-[8px] uppercase tracking-wider text-gray-300">All Terrain</div></div>
-                    <div><div className="text-xs font-black">2.4GHz</div><div className="text-[8px] uppercase tracking-wider text-gray-300">Remote Control</div></div>
-                    <div><div className="text-xs font-black">USB</div><div className="text-[8px] uppercase tracking-wider text-gray-300">Rechargeable</div></div>
-                  </div>
-                </div>
-              </div>
-
+              )}
             </div>
           )}
 

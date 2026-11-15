@@ -53,7 +53,7 @@ export default function Navbar() {
           }
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     async function loadHeader() {
       try {
@@ -77,7 +77,7 @@ export default function Navbar() {
           try {
             localStorage.setItem('ecom_header_config', JSON.stringify(res.data));
             sessionStorage.setItem('ecom_header_config', JSON.stringify(res.data));
-          } catch (_) {}
+          } catch (_) { }
         }
       } catch (_) {
       } finally {
@@ -137,7 +137,7 @@ export default function Navbar() {
         {/* Top Dark Bar */}
         <div className="bg-[#080B12]/95 backdrop-blur-md border-b border-amber-500/30 px-3 sm:px-6 lg:px-8 py-3 transition-all">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-            
+
             {/* Back button with back arrow and RETURN TO NORMAL */}
             <Link
               href="/"
@@ -443,7 +443,7 @@ export default function Navbar() {
                 <div className="absolute inset-[2px] bg-emerald-500/20 rounded-full"></div>
 
                 <Gift size={14} className="relative z-10 text-emerald-600 group-hover:rotate-12 transition-transform" />
-                <span className="relative z-10 tracking-wide uppercase text-[11px]">Discount Panel</span>
+                <span className="relative z-10 tracking-wide uppercase text-[11px]">Reseller Panel</span>
               </Link>
             )}
             <a href="tel:+919999999999" className="flex items-center gap-1.5 text-sm font-bold text-gray-800 hover:text-[#F51F2D] transition">

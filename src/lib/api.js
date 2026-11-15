@@ -103,16 +103,28 @@ async function refreshOnce() {
  * @param {boolean} [_retry] - Internal flag; do not pass from call sites
  */
 async function _fetch(endpoint, options = {}, _retry = false) {
+  // If a refresh is currently running, wait for it before dispatching new requests
+  if (_refreshPromise && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
+    try { await _refreshPromise; } catch (_) {}
+  }
+
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
   const accessToken = tokenStore.getAccess();
+  const tokenSent = accessToken;
   const guestToken = tokenStore.getGuest();
+
+  const cleanHeaders = { ...(options.headers ?? {}) };
+  if (_retry) {
+    delete cleanHeaders.Authorization;
+    delete cleanHeaders.authorization;
+  }
 
   const headers = {
     'Content-Type': 'application/json',
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     ...(guestToken ? { 'x-guest-token': guestToken } : {}),
-    ...(options.headers ?? {}),
+    ...cleanHeaders,
   };
 
   const config = {
@@ -150,7 +162,12 @@ async function _fetch(endpoint, options = {}, _retry = false) {
   }
 
   // ── 401: attempt token refresh once ─────────────────────────────────────────
-  if (response.status === 401 && !_retry) {
+  if (response.status === 401 && !_retry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+    const currentToken = tokenStore.getAccess();
+    if (currentToken && currentToken !== tokenSent) {
+      return _fetch(endpoint, options, true /* _retry */);
+    }
+
     const refreshed = await refreshOnce();
 
     if (refreshed) {
